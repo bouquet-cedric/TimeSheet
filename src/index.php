@@ -21,8 +21,7 @@
     $mydb->addButtonSave();
     $mydb->loadSave();
     echo "</div>";
-
-    $mydb->showCalendar(2022);
+    $mydb->addCalendar();
     
 ?>
 

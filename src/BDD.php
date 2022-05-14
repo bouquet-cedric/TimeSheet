@@ -384,7 +384,20 @@ class BDD {
             }
         }
 
+        function addCalendar(){
+            echo "
+            <form action='' method='post'>
+                <input type='text' pattern='[0-9]{4}' name='yearToShow' placeholder='0000' required/>
+                <input type='submit' value='Get calendar' name='getCalendar'/>
+            </form>
+                ";
+            if (isset($_POST['getCalendar'])){
+                $this->showCalendar($_POST['yearToShow']);
+            }
+        }
+
         function showCalendar($year){
+            $year=$year-'0';
             $fevrier=28;
             if ($this->bissextile($year))
                 $fevrier=29;

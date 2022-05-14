@@ -130,3 +130,13 @@
         background-color: black;
         color: whitesmoke;
     }
+    
+    input:invalid {
+        background-color: red!important;
+        color: red!important;
+    }
+    
+    input:valid {
+        background-color: red!important;
+        color: green!important;
+    }
