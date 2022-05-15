@@ -155,7 +155,7 @@ class BDD {
             $stmt->execute();
             $result = $stmt->fetchAll();
             echo "<div class='detailDate'>";
-            echo "<form action='' method='post'>";
+            echo "<form action='' method='post' style='text-indent:2em'>";
             echo "<select name='datas'>";
             foreach($result as $k => $v){
                 $onlyone=explode(" ",$v['date'])[1];
@@ -166,7 +166,7 @@ class BDD {
             echo "</form>";
             if (isset($_POST['getDay'])){
                 echo "<br><h3>Tâches du ".$_POST['datas']." :</h3>";
-                $this->getTaskAt($_POST['datas']);
+                $this->getTaskAt($_POST['datas'],"detail-day.php");
             }
             echo "</div>";
         }
@@ -255,7 +255,7 @@ class BDD {
             <tr>
                 <td><input type='text' name='jira' required/> </td>
                 <td><input type='text' name='com' required placeholder='commentaire'/> </td>
-                <td><input type='text' name='date' placeholder='00/00/00' required/> </td>
+                <td><input type='text' name='date' placeholder='00/00/0000' pattern='[0-9]{2}/[0-9]{2}/[0-9]{4}' required/> </td>
                 <td><input type='text' name='time' required/> </td>
                 <td><input disabled placeholder='autocomplete'/> </td>
                 <td><input disabled placeholder='autocomplete'/> </td>
@@ -297,7 +297,7 @@ class BDD {
             return $days*8*60+$hours*60+$minutes;
         }
         
-        function getTaskAt($date){
+        function getTaskAt($date,$redirection=null){
             $req="select jira, comment, time, date_t, time_t, id from tasks where date like '%$date%' order by jira asc;";
             $stmt=$this->DB->prepare($req);
             $stmt->execute();
@@ -326,6 +326,7 @@ class BDD {
                         <td class='$cls'>
                             <form action='deleteTask.php' method='post'>
                                 <input type='hidden' value='$val' name='id'/>
+                                <input type='hidden' value='$redirection' name='redirect'/>
                                 <input type='submit' value='X' name='deleteTask'/>
                             </form>
                         </td>";
@@ -346,7 +347,7 @@ class BDD {
             $timhours=($globalHours>0?"$globalHours $labelHours":"");
 
             $timing = ($globalHours>0)?"$timhours ".($globalMinutes>0?"et $timinutes":""):$timinutes;
-            echo "Temps total : $timing";
+            echo "<h4>Temps total : $timing</h4>";
         }
  
         function getPannelTaskAt($date){
@@ -364,6 +365,7 @@ class BDD {
                     else if ($key=='id'){
                         $res=$res."<form action='deleteTask.php' method='post'>".
                         "<input type='hidden' value='".$val."' name='id'/>".
+                        "<input type='hidden' value='planning.php' name='redirect'/>".
                         "<input type='submit' value='X' name='delete'/>".
                         "</form></div>";
                     }
@@ -386,12 +388,13 @@ class BDD {
 
         function addCalendar(){
             echo "
-            <form action='' method='post'>
-                <input type='text' pattern='[0-9]{4}' name='yearToShow' placeholder='0000' required/>
+            <form action='' method='post' style='text-indent:2em;'>
+                <input type='text' pattern='[0-9]{4}' name='yearToShow' placeholder='Année : 0000' required/>
                 <input type='submit' value='Get calendar' name='getCalendar'/>
             </form>
                 ";
             if (isset($_POST['getCalendar'])){
+                echo "<h3>Année ".$_POST['yearToShow']."</h3>";
                 echo "<div id='calendar' class='calendus'>";
                 $this->showCalendar($_POST['yearToShow']);
                 echo "</div>";

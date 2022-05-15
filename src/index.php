@@ -9,25 +9,16 @@
     <script src="./script.js"></script>
 </head>
 <body>
-    <h2>TimeSheet</h2>
-<?php
+    <?php
     require_once('BDD.php');
-
+    include('./template.php');
     $mydb=new BDD();
-    $mydb->getDB();
+    echo "<div class='center'>";
+    echo "<h2>TimeSheet</h2>";
     $mydb->getTasks();
-    echo "<br>";
-    $mydb->getDates();
-    echo "<div class='save'>";
-    $mydb->addButtonSave();
-    $mydb->loadSave();
     echo "</div>";
-    $mydb->addCalendar();
     
 ?>
 
 </body>
 </html>
-<style>
-
-</style>
