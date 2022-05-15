@@ -11,11 +11,16 @@
     
     .invisible {
         display: none!important;
-        background-color: white;
+        background-color: transparent;
+        padding: 2em;
         position: absolute;
         top: 0;
         left: 0;
-        transform: translate(-50%, -100%);
+        transform: translate(0, -100%);
+        background-image: url("./images/bulle2.png");
+        background-size: 100% 100%;
+        background-repeat: no-repeat;
+        min-width: 100%;
     }
     
     tr {
@@ -23,7 +28,8 @@
     }
     
     .button {
-        background-color: red;
+        background-color: blue;
+        cursor: pointer;
         height: 0.5em;
     }
     
@@ -32,7 +38,10 @@
     }
     
     .button:hover .invisible {
-        display: inherit!important;
+        display: flex!important;
+        flex-direction: column;
+        justify-content: space-evenly;
+        align-items: center;
     }
     
     td,
@@ -72,7 +81,6 @@
     
     input:required {
         border: 2px solid darkgoldenrod;
-        /* padding: 0 2em; */
         border-radius: 25px;
     }
     
@@ -85,10 +93,22 @@
         font-size: larger;
     }
     
+    input[name=delete] {
+        position: absolute;
+        right: 0;
+        top: 0;
+        color: white;
+        font-weight: bold;
+        background-color: red;
+        border: 1px solid orange;
+        cursor: pointer;
+        font-size: larger;
+    }
+    
     td,
     th {
-        min-width: 3em;
-        min-height: 5em;
+        min-width: 1em;
+        min-height: 0.2em;
         text-align: center;
     }
     
@@ -117,26 +137,71 @@
     
     .calendar,
     .calendar table {
-        width: 100%;
+        border-collapse: separate;
         margin: inherit!important;
         border: 1px solid white;
         background-color: black;
         color: whitesmoke;
     }
     
+    .calendar table {
+        width: 100%;
+        height: 100%;
+    }
+    
+    .calendar table {
+        width: 100%;
+        height: 100%;
+    }
+    
     .calendar td:not(.button),
     th {
-        border: 1px solid white;
         background-color: black;
         color: whitesmoke;
     }
     
-    input:invalid {
-        background-color: red!important;
+    input:not(input[type=submit]):invalid {
         color: red!important;
     }
     
-    input:valid {
-        background-color: red!important;
+    input:not(input[type=submit]):valid {
         color: green!important;
+    }
+    
+    .calendar-day {
+        color: pink!important;
+    }
+    
+    .calendar-num {
+        color: orange!important;
+        font-weight: bold;
+        font-size: large;
+    }
+    
+    .calendar-month {
+        font-size: medium;
+        color: red!important;
+    }
+    
+    .calendus,
+    .manager_month {
+        display: flex;
+        flex-direction: row;
+    }
+    
+    .manager_month {
+        flex-direction: column;
+        /* justify-content: center; */
+    }
+    
+    * {
+        offset: 0;
+        outline: 0;
+    }
+    
+    .calendus button {
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        font-size: x-large;
     }

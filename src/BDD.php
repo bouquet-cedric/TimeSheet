@@ -350,7 +350,7 @@ class BDD {
         }
  
         function getPannelTaskAt($date){
-            $req="select jira, comment, time, date_t, time_t, id from tasks where date like '%$date%' order by jira asc;";
+            $req="select jira, comment, time, id from tasks where date like '%$date%' order by jira asc;";
             $stmt=$this->DB->prepare($req);
             $stmt->execute();
             $result = $stmt->fetchAll();
@@ -359,15 +359,15 @@ class BDD {
                 $res=$res."<td class='button'>";
                 foreach ($result[$i] as $key => $val){
                     if ($key=='jira'){
-                        $res=$res."<span class='invisible'><a target='_blank' href='https://jira.worldline.com/browse/".$val."'>$val</a>";
+                        $res=$res."<div class='invisible'><a target='_blank' href='https://jira.worldline.com/browse/".$val."'>$val</a>";
                     }
                     else if ($key=='id'){
                         $res=$res."<form action='deleteTask.php' method='post'>".
                         "<input type='hidden' value='".$val."' name='id'/>".
-                        "<input type='submit' value='X' name='deleteTask'/>".
-                        "</form></span>";
+                        "<input type='submit' value='X' name='delete'/>".
+                        "</form></div>";
                     }
-                    else if ($key=='comment'){
+                    else if ($key=='comment' || $key='time'){
                         $res=$res."<br><span class='planningCom'>$val</span>";                        
                     }
                 }
@@ -392,43 +392,83 @@ class BDD {
             </form>
                 ";
             if (isset($_POST['getCalendar'])){
+                echo "<div id='calendar' class='calendus'>";
                 $this->showCalendar($_POST['yearToShow']);
+                echo "</div>";
             }
         }
 
+        function showDay($d,$m,$year){
+            $months=array("Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre");
+            $days=array(
+                "Monday"=>"Lundi",
+                "Tuesday"=>"Mardi",
+                "Wednesday"=>"Mercredi",
+                "Thursday"=>"Jeudi",
+                "Friday"=>"Vendredi",
+                "Saturday"=>"Samedi",
+                "Sunday"=>"Dimanche"
+            );
+            $day=$this->getDay("$d/$m/$year");
+            $jour=explode(" ",$day)[0];
+            $date=explode(" ",$day)[1];
+            $fmt=str_replace('-','/',$date);
+            $fmt=str_replace('/'.$year,'',$fmt);
+            $index=($m-'0')-1;
+            $fmt=str_replace('/'.$m,' '.$months[$index],$fmt);
+            $numero=explode(' ',$fmt)[0];
+            $mois=explode(' ',$fmt)[1];
+            $jour=$days[$jour];
+            echo "
+            <td>
+                <table class='pannelTask'>
+                    <tr>
+                        <td class='calendar-day' colspan='8'>".$jour."</td>
+                    </tr>
+                    <tr>
+                        <td class='calendar-num' colspan='8'>".$numero."</td>
+                    </tr>
+                    <tr>
+                        <td class='calendar-month' colspan='8'>".$mois."</td>
+                    </tr>
+                    <tr>".$this->getPannelTaskAt($date)."
+                    </tr>
+                </table>
+            </td>";
+        }
+
         function showCalendar($year){
+            echo "<div class='manager_month'>";
+            echo "<button onclick='previousMonth()'>&#9664;</button>";
+            echo "</div>";
             $year=$year-'0';
             $fevrier=28;
             if ($this->bissextile($year))
-                $fevrier=29;
+            $fevrier=29;
             $months=array(31,$fevrier,31,30,31,30,31,31,30,31,30,31);
             echo "<table class='calendar'>";
             for ($i=0;$i<12;$i++){
-                echo "<tr>";
+                echo "<tr class='month_".($i+1)."'>";
+                $break=15;
+                if ($months[$i] == 31)
+                $break=16;
+                elseif ($months[$i] == 28)
+                $break=14;
                 for ($j=1;$j<=$months[$i];$j++){
                     $m=($i+1)>9?($i+1):'0'.($i+1);
                     $d=$j>9?$j:'0'.$j;
-                    $day=$this->getDay("$d/$m/$year");
-                    $jour=explode(" ",$day)[0];
-                    $date=explode(" ",$day)[1];
-                    $fmt=str_replace('-','/',$date);
-                    echo "
-                    <td>
-                        <table class='pannelTask'>
-                            <tr>
-                                <td colspan='8'>".$jour."</td>
-                            </tr>
-                            <tr>
-                                <td colspan='8'>".$fmt."</td>
-                            </tr>
-                            <tr>".$this->getPannelTaskAt($date)."
-                            </tr>
-                        </table>
-                    </td>";
+                    $this->showDay($d,$m,$year);
+                    if ($j %7 ==0) echo "</tr><tr class='month_".($i+1)."'>";
                 }
                 echo "</tr>";
             }
             echo "</table>";
+            echo "<div class='manager_month'>";
+            echo "<button onclick='nextMonth()'>&#9654;</button>";
+            echo "</div>";
+            echo "<script>
+            initMonth();
+            </script>";
         }
     }
 
