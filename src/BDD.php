@@ -8,8 +8,10 @@ class BDD {
         }
 
         function reinitDatabase(){
-            $this->DB->query("delete from tasks");
-            $this->DB->query("drop table tasks;");
+            $stmt=$this->DB->prepare("delete from tasks");
+            $stmt->execute();
+            $stmt=$this->DB->prepare("update sqlite_sequence set SEQ=0 where name='tasks'");
+            $stmt->execute();
         }
 
         function createTasks(){
@@ -33,7 +35,6 @@ class BDD {
                     $this->DB=new PDO('sqlite:database.sqlite',"","",array(PDO::ATTR_PERSISTENT => true));
                     $this->DB->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
                     $this->DB->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-                    // $this->reinitDatabase();
                     $this->createTasks();
                 }
                 return $this->DB;
@@ -61,9 +62,15 @@ class BDD {
             $res=$stmt->fetch();
             if ($res['name'] == 'copy_tasks') {
                 echo "
-                <form action='loadSave.php' method='post'>
+                <form action='' method='post'>
                     <input type='submit' title='Charge la dernière sauvegarde\n&#9888;Efface les valeurs courantes' value='&#10227' name='loadSave'/>
                 </form>";
+            }
+            if (isset($_POST['loadSave'])){
+                $tmp = new BDD();
+                $tmp->reinitDatabase();
+                $tmp->getDB();
+                $tmp->loadSinceSave();
             }
         }
 
@@ -150,22 +157,54 @@ class BDD {
         }
 
         function getDates(){
+            $months=array("Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre");
+            $days=array(
+                "Monday"=>"Lundi",
+                "Tuesday"=>"Mardi",
+                "Wednesday"=>"Mercredi",
+                "Thursday"=>"Jeudi",
+                "Friday"=>"Vendredi",
+                "Saturday"=>"Samedi",
+                "Sunday"=>"Dimanche"
+            );
             $req="select distinct date from tasks order by year,month,day asc;";
             $stmt=$this->DB->prepare($req);
             $stmt->execute();
             $result = $stmt->fetchAll();
             echo "<div class='detailDate'>";
             echo "<form action='' method='post' style='text-indent:2em'>";
-            echo "<select name='datas'>";
+            echo "<input autofocus class='dater' list='dates' name='datas'/>";
+            echo "<datalist id='dates'>";
+            echo "<option disabled selected value>-- choisissez une date --</option>";
             foreach($result as $k => $v){
+                $jour=explode(" ",$v['date'])[0];
+                $date=explode(" ",$v['date'])[1];
+                $d=explode("-",$date)[0];
+                $m=explode("-",$date)[1];
+                $y=explode("-",$date)[2];
+                $index=($m-'0')-1;
+                $jour=$days[$jour];
+                $mois=$months[$index];
+                $format=$jour." $d ".$mois." ".$y;
                 $onlyone=explode(" ",$v['date'])[1];
-                echo "<option value='".$v['date']."'>".$onlyone."</option>";
+                $onlyone=str_replace('-',' / ',$onlyone);
+                echo "<option value='".$v['date']."'>".$format."</option>";
             }
-            echo "</select>";
-            echo "<input type='submit' name='getDay' value='Afficher le détail'/>";
+            echo "</datalist>";
+            echo "<input type='submit' name='getDay' value='Afficher'/>";
             echo "</form>";
             if (isset($_POST['getDay'])){
-                echo "<br><h3>Tâches du ".$_POST['datas']." :</h3>";
+                $date=$_POST['datas'];
+                $jour=explode(" ",$date)[0];
+                $date=explode(" ",$date)[1];
+                $d=explode("-",$date)[0];
+                $m=explode("-",$date)[1];
+                $y=explode("-",$date)[2];
+                $index=($m-'0')-1;
+                $jour=$days[$jour];
+                $mois=$months[$index];
+                $format=$jour." $d ".$mois." ".$y;
+                echo "<br><h3>Tâches du ".$format."</h3>";
                 $this->getTaskAt($_POST['datas'],"detail-day.php");
             }
             echo "</div>";
@@ -253,7 +292,7 @@ class BDD {
             }
             echo "<form action='addTask.php' method='post'>
             <tr>
-                <td><input type='text' name='jira' required/> </td>
+                <td><input type='text' name='jira' autofocus required/> </td>
                 <td><input type='text' name='com' required placeholder='commentaire'/> </td>
                 <td><input type='text' name='date' placeholder='00/00/0000' pattern='[0-9]{2}/[0-9]{2}/[0-9]{4}' required/> </td>
                 <td><input type='text' name='time' required/> </td>
@@ -389,8 +428,14 @@ class BDD {
         function addCalendar(){
             echo "
             <form action='' method='post' style='text-indent:2em;'>
-                <input type='text' pattern='[0-9]{4}' name='yearToShow' placeholder='Année : 0000' required/>
-                <input type='submit' value='Get calendar' name='getCalendar'/>
+                <input type='list' list='years' autofocus pattern='[0-9]{4}' name='yearToShow' required>
+                <datalist id='years'>";
+                for ($i=2020;$i<2030;$i++){
+                    echo "<option value='$i'>$i</option>";
+                }
+                echo "
+                </datalist>
+                <input type='submit' value='Afficher' name='getCalendar'/>
             </form>
                 ";
             if (isset($_POST['getCalendar'])){
@@ -452,11 +497,6 @@ class BDD {
             echo "<table class='calendar'>";
             for ($i=0;$i<12;$i++){
                 echo "<tr class='month_".($i+1)."'>";
-                $break=15;
-                if ($months[$i] == 31)
-                $break=16;
-                elseif ($months[$i] == 28)
-                $break=14;
                 for ($j=1;$j<=$months[$i];$j++){
                     $m=($i+1)>9?($i+1):'0'.($i+1);
                     $d=$j>9?$j:'0'.$j;
