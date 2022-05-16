@@ -8,10 +8,16 @@ class BDD {
         }
 
         function reinitDatabase(){
-            $stmt=$this->DB->prepare("delete from tasks");
-            $stmt->execute();
-            $stmt=$this->DB->prepare("update sqlite_sequence set SEQ=0 where name='tasks'");
-            $stmt->execute();
+            try {
+
+                $stmt=$this->DB->prepare("delete from tasks");
+                $stmt->execute();
+                $stmt=$this->DB->prepare("update sqlite_sequence set SEQ=0 where name='tasks'");
+                $stmt->execute();
+            }
+            catch (PDOException $p){
+                echo $p->getMessage();
+            }
         }
 
         function createTasks(){
@@ -104,6 +110,16 @@ class BDD {
             if (! $isUpdated){
                 $stmt=$this->DB->prepare("insert into tasks (jira,date_t,time_t,date,time,comment,day,month,year) values (:jira,:dt,:tt,:date,:time,:com,:d,:m,:y);");
                 $datum=$this->getToday();
+                // echo "$jira<br>";
+                // echo "$datum[0]<br>";
+                // echo "$datum[1]<br>";
+                // echo "DATE : $date<br>";
+                // echo $this->getDay($date),"<br>";
+                // echo $time,'<br>';
+                // echo $comment,'<br>';
+                // echo $day,'<br>';
+                // echo $mon,'<br>';
+                // echo $year,'<br>';
                 $stmt->execute(array(
                     'jira' => $jira,
                     'dt' => $datum[0],
@@ -119,10 +135,16 @@ class BDD {
         }
 
         function deleteTask($id){
-            $stmt=$this->DB->prepare("delete from tasks where id = :id;");
-            $stmt->execute(array(
-                'id' => $id
-            ));
+            try {
+
+                $stmt=$this->DB->prepare("delete from tasks where id = :id;");
+                $stmt->execute(array(
+                    'id' => $id
+                ));
+            }
+            catch (PDOException $p){
+                echo $p->getMessage();
+            }
         }
 
         private function getRealNumber($champDate){

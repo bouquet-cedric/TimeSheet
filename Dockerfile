@@ -31,4 +31,5 @@ COPY conf/apache.conf /etc/apache2/conf-available/z-app.conf
 RUN a2enmod rewrite remoteip && \
     a2enconf z-app
 
-RUN chmod ugo+rwx /
+RUN chmod -R ugo+rwx /app
+
