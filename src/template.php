@@ -14,7 +14,7 @@
         addLink('planning.php','&#128197;');
         addLink('detail-day.php','&#128195;');
         $db = new BDD();
-        $db->addButtonSave();
+        $db->addSave();
         $db->loadSave();
         echo "</div>";
     }

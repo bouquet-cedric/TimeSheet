@@ -6,5 +6,8 @@
             $db->addTask($_POST['jira'],$_POST['date'],$_POST['time'],$_POST['com']);
         }
     }
-    header('Location: index.php');
+    $redirect='index.php';
+    if (isset($_POST['redirect']) && $_POST['redirect'] != "")
+        $redirect=$_POST['redirect'];
+    header('Location: '.$redirect);
 ?>

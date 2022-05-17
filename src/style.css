@@ -1,9 +1,10 @@
     h2 {
         text-align: center;
+        font-family: cursive;
     }
     
     .invisible {
-        display: none!important;
+        display: none;
         background-color: transparent;
         padding: 2em;
         position: absolute;
@@ -13,7 +14,6 @@
         background-image: url("./images/bulle2.png");
         background-size: 100% 100%;
         background-repeat: no-repeat;
-        min-width: 100%;
     }
     
     tr {
@@ -24,17 +24,15 @@
         background-color: blue;
         cursor: pointer;
         height: 0.5em;
-    }
-    
-    .button {
+        border-radius: 50% 50% 0 0;
         position: relative;
     }
     
     .button:hover .invisible {
-        display: flex!important;
-        flex-direction: column;
-        justify-content: space-evenly;
-        align-items: center;
+        display: inline-block;
+        min-width: 7em;
+        max-width: 20em;
+        z-index: 20;
     }
     
     td,
@@ -72,21 +70,22 @@
         cursor: pointer;
     }
     
-    input:required {
+    input:required:not(.dater) {
         border: 2px solid darkgoldenrod;
         border-radius: 25px;
     }
     
     input[name=deleteTask] {
         color: white;
+        border-radius: 5px;
         font-weight: bold;
         background-color: red;
-        border: 1px solid orange;
+        border: none;
         cursor: pointer;
         font-size: larger;
     }
     
-    input[name=delete] {
+    input.delete {
         position: absolute;
         right: 0;
         top: 0;
@@ -117,10 +116,6 @@
         text-align: center;
     }
     
-    input:disabled::before {
-        content: "[";
-    }
-    
     input:disabled::placeholder {
         color: red;
         font-style: italic;
@@ -137,7 +132,19 @@
     }
     
     .planningCom {
-        color: black;
+        color: gray;
+        font-family: cursive;
+        font-size: medium;
+        display: inline-block;
+    }
+    
+    .invisible .jira {
+        font-family: cursive;
+    }
+    
+    .calendar {
+        width: 85%;
+        margin: auto;
     }
     
     .calendar,
@@ -196,7 +203,6 @@
     
     .manager_month {
         flex-direction: column;
-        /* justify-content: center; */
     }
     
     * {
@@ -237,7 +243,7 @@
     }
     
     .center {
-        position: fixed;
+        position: absolute;
         left: 10%;
         width: 90%;
         height: 100%;
@@ -259,9 +265,114 @@
         text-indent: 2em;
     }
     
+    .formular {
+        background-color: transparent;
+        text-indent: 2em;
+        display: flex;
+        padding: 0 2em;
+        align-items: center;
+    }
+    
     .dater {
         border: 1px solid #ccc;
         margin-right: 2em;
         padding: 5px 3px;
         border-radius: 10px;
+    }
+    
+    .tasks-list {
+        position: relative;
+        margin: auto;
+        margin-bottom: 30vh;
+        min-height: 30em!important;
+        height: 20em!important;
+        max-height: 20em!important;
+        width: 75vw;
+        overflow-y: scroll;
+        overflow-x: hidden;
+    }
+    
+    .tasks-list tbody {
+        position: absolute;
+        max-height: 75vh;
+        overflow-y: scroll;
+        width: 80vw!important;
+    }
+    
+    .tasks-list tfoot {
+        position: absolute;
+        margin-top: 75vh;
+        z-index: 100;
+    }
+    
+    .tasks-list tbody,
+    .tasks-list tfoot {
+        width: 100%;
+    }
+    
+    .tasks-list td,
+    .tasks-list th {
+        min-width: 10em;
+        width: 10em;
+        max-width: 10em;
+        text-align: center;
+    }
+    
+    .tasks-list tbody,
+    .tasks-list tfoot {
+        border-top: solid 1px;
+    }
+    
+    th.jira,
+    td.jira {
+        min-width: 15em;
+        width: 15em;
+        max-width: 15em;
+    }
+    
+    th.time,
+    td.time {
+        min-width: 5em;
+        width: 5em;
+        max-width: 5em;
+    }
+    
+    th.update-time,
+    td.time_t {
+        min-width: 8em;
+        width: 8em;
+        max-width: 8em;
+    }
+    
+    th.commentaire,
+    td.comment,
+    th.date,
+    td.date,
+    th.update-date,
+    td.date_t {
+        min-width: 12em;
+        width: 12em;
+        max-width: 12em;
+    }
+    
+    td.time input {
+        width: 80%;
+    }
+    
+    th.action,
+    td.id {
+        min-width: 8em;
+        width: 8em;
+        max-width: 8em;
+    }
+    
+    .tasks-list th,
+    .tasks-list td,
+    .tasks-list tbody,
+    .tasks-list thead,
+    .tasks-list tfoot,
+    .tasks-list tr {
+        border-top: none;
+        border-bottom: none;
+        border: none;
     }

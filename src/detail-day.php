@@ -16,7 +16,6 @@
     echo "<h2>TimeSheet - Détail</h2>";
     $db->getDates();
     echo "</div>";
-
 ?>
 
 </body>

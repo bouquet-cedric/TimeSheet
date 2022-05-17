@@ -51,7 +51,7 @@ class BDD {
             }
         }
 
-        function addButtonSave(){
+        function addSave(){
             echo "
             <form action='' method='post'>
                 <input type='submit' title='Créer sauvegarde' value='&#128190;' name='makeSave'/>
@@ -194,10 +194,9 @@ class BDD {
             $stmt->execute();
             $result = $stmt->fetchAll();
             echo "<div class='detailDate'>";
-            echo "<form action='' method='post' style='text-indent:2em'>";
-            echo "<input autofocus class='dater' list='dates' name='datas'/>";
+            echo "<form action='' method='post' class='formular'>";
+            echo "<input autofocus class='dater' list='dates' name='datas' required/>";
             echo "<datalist id='dates'>";
-            echo "<option disabled selected value>-- choisissez une date --</option>";
             foreach($result as $k => $v){
                 $jour=explode(" ",$v['date'])[0];
                 $date=explode(" ",$v['date'])[1];
@@ -228,6 +227,21 @@ class BDD {
                 $format=$jour." $d ".$mois." ".$y;
                 echo "<br><h3>Tâches du ".$format."</h3>";
                 $this->getTaskAt($_POST['datas'],"detail-day.php");
+            }
+            else if (isset($_GET['datas'])){
+                $date=$_GET['datas'];
+                $date=str_replace('%20',' ',$date);
+                $jour=explode(" ",$date)[0];
+                $date=explode(" ",$date)[1];
+                $d=explode("-",$date)[0];
+                $m=explode("-",$date)[1];
+                $y=explode("-",$date)[2];
+                $index=($m-'0')-1;
+                $jour=$days[$jour];
+                $mois=$months[$index];
+                $format=$jour." $d ".$mois." ".$y;
+                echo "<br><h3>Tâches du ".$format."</h3>";
+                $this->getTaskAt($_GET['datas'],"detail-day.php?datas=".$_GET['datas']);
             }
             echo "</div>";
         }
@@ -276,55 +290,76 @@ class BDD {
             return $execute;
         }
 
-        function getTasks(){
-            $req="SELECT jira, comment, date, time, date_t, time_t,id from tasks where id in ( SELECT id
-                    FROM tasks 
-                    ORDER BY year desc,month desc,day desc limit 10) order by year,month,day,jira;";
+        function getDataListJirasComment(){
+            $req="SELECT distinct jira, comment FROM tasks";
             $stmt=$this->DB->prepare($req);
             $stmt->execute();
             $result = $stmt->fetchAll();
-            echo "<table><tr>";
+            $jiraList="<datalist id='allJiras'>";
+            for ($i=0;$i<count($result);$i++){
+                foreach ($result[$i] as $key => $val){
+                    if ($key=='jira')
+                        $jira=$val;
+                    else if ($key=='comment')
+                        $comment=$val;
+                }
+                $jiraList="$jiraList<option comment='$comment' value='$jira'>$comment</option>";
+            }
+            $jiraList="$jiraList</datalist>";
+            return $jiraList;
+        }
+
+        function getTasks($number=10){
+            $req="SELECT jira, comment, date, time, date_t, time_t,id from tasks where id in ( SELECT id
+                    FROM tasks 
+                    ORDER BY year desc,month desc,day desc limit $number) order by year,month,day,jira;";
+            $stmt=$this->DB->prepare($req);
+            $stmt->execute();
+            $result = $stmt->fetchAll();
+            echo "<table class='tasks-list'><thead><tr>";
             $columns=explode(',',"jira,commentaire,date,time,update-date,update-time,action");
             for ($i=0;$i<count($columns);$i++){
                 echo "<th class='$columns[$i]'>$columns[$i]</th>";
             }
+            echo "</thead><thbody>";
             for ($i=0;$i<count($result);$i++){
                 echo "<tr>";
                 $cls="";
                 if ($i %2 == 0) $cls="pair";
                 else $cls="impair";
                 foreach ($result[$i] as $key => $val){
-                    if ($key == "real_date");
-                    else if ($key=='jira'){
-                        echo "<td class='$cls'><a target='_blank' href='https://jira.worldline.com/browse/".$val."'>".$val."</a></td>";
+                    if ($key=='jira'){
+                        echo "<td class='$cls $key'><a target='_blank' href='https://jira.worldline.com/browse/".$val."'>".$val."</a></td>";
                     }
                     else if ($key=='id')
                         echo "
-                        <td class='$cls'>
+                        <td class='$cls $key'>
                             <form action='deleteTask.php' method='post'>
                                 <input type='hidden' value='$val' name='id'/>
                                 <input type='submit' value='X' name='deleteTask'/>
                             </form>
                         </td>";
                     else {
-                        echo "<td class='$cls'>$val</td>";
+                        echo "<td class='$cls $key'>$val</td>";
                     }
                 }
                 echo "<tr>";
             }
-            echo "<form action='addTask.php' method='post'>
+            echo "<form autocomplete='off' action='addTask.php' method='post'>
+            <tfoot>
             <tr>
-                <td><input type='text' name='jira' autofocus required/> </td>
-                <td><input type='text' name='com' required placeholder='commentaire'/> </td>
-                <td><input type='text' name='date' placeholder='00/00/0000' pattern='[0-9]{2}/[0-9]{2}/[0-9]{4}' required/> </td>
-                <td><input type='text' name='time' required/> </td>
-                <td><input disabled placeholder='autocomplete'/> </td>
-                <td><input disabled placeholder='autocomplete'/> </td>
-                <td><input type='submit' name='addTask' value='+'/> </td>
+            <td class='jira'><input type='list' id='jiras-input' oninput='fillComment()' placeholder='jira' name='jira' list='allJiras' autofocus required/>".$this->getDataListJirasComment()."</td>
+            <td class='comment'><input type='text' name='com' id='commentary' required placeholder='commentaire'/> </td>
+            <td class='date'><input type='text' name='date' placeholder='00/00/0000' pattern='[0-9]{2}/[0-9]{2}/[0-9]{4}' required/> </td>
+            <td class='time'><input type='text' name='time' placeholder='1d 1h 30' pattern='-*([0-9]{1,2} *d)* *([0-9]{1,2} *h)* *[0-9]{0,2}' required/> </td>
+            <td class='date_t'><input disabled placeholder='autocomplete'/> </td>
+            <td class='time_t'><input disabled placeholder='autocomplete'/> </td>
+            <td class='id'><input type='submit' name='addTask' value='+'/> </td>
             </tr>
+            </tfoot>
             </form>
             ";
-            echo "</table>";
+            echo "</table></div>";
         }
 
         private function in ($chaine,$elt){
@@ -397,7 +432,22 @@ class BDD {
                 }
                 echo "<tr>";
             }
-            echo "</table>";
+            $format=explode(' ',$date)[1];
+            $format=str_replace('-','/',$format);
+            echo "<form autocomplete='off' action='addTask.php' method='post'>
+            <tfoot>
+            <tr>
+            <td class='jira'><input type='list' id='jiras-input' oninput='fillComment()' placeholder='jira' name='jira' list='allJiras' autofocus required/>".$this->getDataListJirasComment()."</td>
+            <td class='comment'><input type='text' name='com' id='commentary' required placeholder='commentaire'/> </td>
+            <input type='hidden' name='date' value='$format'/>
+            <input type='hidden' name='redirect' value='detail-day.php?datas=$date'/>
+            <td class='time'><input type='text' name='time' placeholder='1d 1h 30' pattern='-*([0-9]{1,2} *d)* *([0-9]{1,2} *h)* *[0-9]{0,2}' required/></td>
+            <td class='date_t'><input disabled placeholder='autocomplete'/> </td>
+            <td class='time_t'><input disabled placeholder='autocomplete'/> </td>
+            <td class='id'><input type='submit' name='addTask' value='+'/> </td>
+            </tr>
+            </tfoot>
+            </form></table>";
             $globalHours=floor($globalTime/60);
             $globalMinutes=$globalTime - $globalHours * 60;
 
@@ -416,27 +466,34 @@ class BDD {
             $stmt=$this->DB->prepare($req);
             $stmt->execute();
             $result = $stmt->fetchAll();
-            $res="";
-            for ($i=0;$i<count($result);$i++){
-                $res=$res."<td class='button'>";
-                foreach ($result[$i] as $key => $val){
-                    if ($key=='jira'){
-                        $res=$res."<div class='invisible'><a target='_blank' href='https://jira.worldline.com/browse/".$val."'>$val</a>";
+            if (count($result)>0){
+
+                $res="";
+                for ($i=0;$i<count($result);$i++){
+                    $res=$res."<td class='button'>";
+                    foreach ($result[$i] as $key => $val){
+                        if ($key=='jira'){
+                            $res=$res."<div class='invisible'><a target='_blank' class='jira' href='https://jira.worldline.com/browse/".$val."'>$val</a>";
+                        }
+                        else if ($key=='id'){
+                            $res=$res."<form action='deleteTask.php' method='post'>".
+                            "<input type='hidden' value='".$val."' name='id'/>".
+                            "<input type='hidden' value='planning.php' name='redirect'/>".
+                            "<input type='submit' class='delete' value='X' name='deleteTask'/>".
+                            "</form></div>";
+                        }
+                        else if ($key=='comment' || $key='time'){
+                            $res=$res."<br><span class='planningCom'>$val</span>";
+                        }
                     }
-                    else if ($key=='id'){
-                        $res=$res."<form action='deleteTask.php' method='post'>".
-                        "<input type='hidden' value='".$val."' name='id'/>".
-                        "<input type='hidden' value='planning.php' name='redirect'/>".
-                        "<input type='submit' value='X' name='delete'/>".
-                        "</form></div>";
-                    }
-                    else if ($key=='comment' || $key='time'){
-                        $res=$res."<br><span class='planningCom'>$val</span>";                        
-                    }
+                    $res=$res."</td>";
                 }
-                $res=$res."</td>";
+                return $res;
             }
-            return  $res;
+        }
+            
+        function logger($res){
+            echo "<script>console.log(\"".$res."\");</script>";
         }
 
         function bissextile($annee) {
@@ -449,8 +506,8 @@ class BDD {
 
         function addCalendar(){
             echo "
-            <form action='' method='post' style='text-indent:2em;'>
-                <input type='list' list='years' autofocus pattern='[0-9]{4}' name='yearToShow' required>
+            <form action='' autocomplete='off' method='post' class='formular'>
+                <input type='list' list='years' class='dater' autofocus pattern='[0-9]{4}' name='yearToShow' required>
                 <datalist id='years'>";
                 for ($i=2020;$i<2030;$i++){
                     echo "<option value='$i'>$i</option>";
@@ -533,6 +590,7 @@ class BDD {
             echo "</div>";
             echo "<script>
             initMonth();
+            isActive=true;
             </script>";
         }
     }

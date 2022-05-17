@@ -6,6 +6,9 @@
             $db->deleteTask($_POST['id']);
         }
     }
+    else {
+        die();
+    }
     $redirect='index.php';
     if (isset($_POST['redirect'])) $redirect=$_POST['redirect'];
     header('Location: '.$redirect);
