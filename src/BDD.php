@@ -2,6 +2,16 @@
 
 class BDD {
         private $DB=null;
+        private $months=array("Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre");
+        private $days=array(
+            "Monday"=>"Lundi",
+            "Tuesday"=>"Mardi",
+            "Wednesday"=>"Mercredi",
+            "Thursday"=>"Jeudi",
+            "Friday"=>"Vendredi",
+            "Saturday"=>"Samedi",
+            "Sunday"=>"Dimanche"
+        );
 
         function __construct(){
             $this->getDB();
@@ -20,8 +30,8 @@ class BDD {
             }
         }
 
-        function createTasks(){
-            $this->DB->query('create table if not exists tasks (
+        function createTasks($name){
+            $this->DB->query('create table if not exists '.$name.' (
                 id integer primary key autoincrement,
                 jira varchar NOT NULL,
                 date_t date NOT NULL,
@@ -41,7 +51,7 @@ class BDD {
                     $this->DB=new PDO('sqlite:database.sqlite',"","",array(PDO::ATTR_PERSISTENT => true));
                     $this->DB->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
                     $this->DB->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-                    $this->createTasks();
+                    $this->createTasks("tasks");
                 }
                 return $this->DB;
             }
@@ -86,18 +96,7 @@ class BDD {
 
         function makeSave(){
             $this->DB->query("drop table if exists copy_tasks;");
-            $this->DB->query('create table if not exists copy_tasks (
-                id integer primary key autoincrement,
-                jira varchar NOT NULL,
-                date_t date NOT NULL,
-                time_t time NOT NULL,
-                date date NOT NULL,
-                time varchar NOT NULL,
-                comment varchar,
-                day int,
-                month int,
-                year int
-            );');
+            $this->createTasks("copy_tasks");
             $this->DB->query("insert into copy_tasks (jira, date_t, time_t, date, time, comment, day, month, year)
              select jira, date_t, time_t, date, time, comment, day, month, year from tasks;");
         }
@@ -110,16 +109,6 @@ class BDD {
             if (! $isUpdated){
                 $stmt=$this->DB->prepare("insert into tasks (jira,date_t,time_t,date,time,comment,day,month,year) values (:jira,:dt,:tt,:date,:time,:com,:d,:m,:y);");
                 $datum=$this->getToday();
-                // echo "$jira<br>";
-                // echo "$datum[0]<br>";
-                // echo "$datum[1]<br>";
-                // echo "DATE : $date<br>";
-                // echo $this->getDay($date),"<br>";
-                // echo $time,'<br>';
-                // echo $comment,'<br>';
-                // echo $day,'<br>';
-                // echo $mon,'<br>';
-                // echo $year,'<br>';
                 $stmt->execute(array(
                     'jira' => $jira,
                     'dt' => $datum[0],
@@ -136,7 +125,6 @@ class BDD {
 
         function deleteTask($id){
             try {
-
                 $stmt=$this->DB->prepare("delete from tasks where id = :id;");
                 $stmt->execute(array(
                     'id' => $id
@@ -144,6 +132,7 @@ class BDD {
             }
             catch (PDOException $p){
                 echo $p->getMessage();
+                die();
             }
         }
 
@@ -177,38 +166,30 @@ class BDD {
             $d=getdate(strtotime($reformateDay));
             return $this->getDate($d)[0];
         }
+        
+        private function getFormat($date){
+            $jour=explode(" ",$date)[0];
+            $date=explode(" ",$date)[1];
+            $d=explode("-",$date)[0];
+            $m=explode("-",$date)[1];
+            $y=explode("-",$date)[2];
+            $index=($m-'0')-1;
+            $jour=$this->days[$jour];
+            $mois=$this->months[$index];
+            return $jour." $d ".$mois." ".$y;
+        }
 
         function getDates(){
-            $months=array("Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre");
-            $days=array(
-                "Monday"=>"Lundi",
-                "Tuesday"=>"Mardi",
-                "Wednesday"=>"Mercredi",
-                "Thursday"=>"Jeudi",
-                "Friday"=>"Vendredi",
-                "Saturday"=>"Samedi",
-                "Sunday"=>"Dimanche"
-            );
             $req="select distinct date from tasks order by year,month,day asc;";
             $stmt=$this->DB->prepare($req);
             $stmt->execute();
             $result = $stmt->fetchAll();
             echo "<div class='detailDate'>";
-            echo "<form action='' method='post' class='formular'>";
-            echo "<input autofocus class='dater' list='dates' name='datas' required/>";
+            echo "<form action='' method='post' autocomplete='off' class='formular'>";
+            echo "<input autofocus pattern='[A-Z][a-z]* ([0-9]{2}-)*[0-9]{4}' class='dater' list='dates' name='datas' required/>";
             echo "<datalist id='dates'>";
             foreach($result as $k => $v){
-                $jour=explode(" ",$v['date'])[0];
-                $date=explode(" ",$v['date'])[1];
-                $d=explode("-",$date)[0];
-                $m=explode("-",$date)[1];
-                $y=explode("-",$date)[2];
-                $index=($m-'0')-1;
-                $jour=$days[$jour];
-                $mois=$months[$index];
-                $format=$jour." $d ".$mois." ".$y;
-                $onlyone=explode(" ",$v['date'])[1];
-                $onlyone=str_replace('-',' / ',$onlyone);
+                $format=$this->getFormat($v['date']);
                 echo "<option value='".$v['date']."'>".$format."</option>";
             }
             echo "</datalist>";
@@ -216,39 +197,23 @@ class BDD {
             echo "</form>";
             if (isset($_POST['getDay'])){
                 $date=$_POST['datas'];
-                $jour=explode(" ",$date)[0];
-                $date=explode(" ",$date)[1];
-                $d=explode("-",$date)[0];
-                $m=explode("-",$date)[1];
-                $y=explode("-",$date)[2];
-                $index=($m-'0')-1;
-                $jour=$days[$jour];
-                $mois=$months[$index];
-                $format=$jour." $d ".$mois." ".$y;
+                $format=$this->getFormat($date);
                 echo "<br><h3>Tâches du ".$format."</h3>";
-                $this->getTaskAt($_POST['datas'],"detail-day.php");
+                $this->getTaskAt($_POST['datas'],"detail-day.php?datas=".$_GET['datas']);
             }
             else if (isset($_GET['datas'])){
                 $date=$_GET['datas'];
                 $date=str_replace('%20',' ',$date);
-                $jour=explode(" ",$date)[0];
-                $date=explode(" ",$date)[1];
-                $d=explode("-",$date)[0];
-                $m=explode("-",$date)[1];
-                $y=explode("-",$date)[2];
-                $index=($m-'0')-1;
-                $jour=$days[$jour];
-                $mois=$months[$index];
-                $format=$jour." $d ".$mois." ".$y;
+                $format=$this->getFormat($date);
                 echo "<br><h3>Tâches du ".$format."</h3>";
                 $this->getTaskAt($_GET['datas'],"detail-day.php?datas=".$_GET['datas']);
             }
             echo "</div>";
         }
 
-        private function addTimes($time1,$time2){
-            $sp1=$this->splitTime($time1);
-            $sp2=$this->splitTime($time2);
+        private static function addTimes($time1,$time2){
+            $sp1=BDD::splitTime($time1);
+            $sp2=BDD::splitTime($time2);
             $globalTime=$sp1+$sp2;
             $globalHours=floor($globalTime/60);
             $globalMinutes=$globalTime - $globalHours * 60;
@@ -273,7 +238,7 @@ class BDD {
                 foreach ($elt as $k => $v){
                     if ($k == 'jira'){
                         if ($v == $jira){
-                            $finalTime=$this->addTimes($elt['time'],$time);
+                            $finalTime=BDD::addTimes($elt['time'],$time);
                             $execute=true;
                             $stmt=$this->DB->prepare("update tasks set time = :time where jira=:j and day=:d and month=:m and year=:y;");
                             $stmt->execute(array(
@@ -362,7 +327,7 @@ class BDD {
             echo "</table></div>";
         }
 
-        private function in ($chaine,$elt){
+        private static function in ($chaine,$elt){
             $len=strlen($chaine);
             for ($i=0;$i<$len;$i++){
                 if ($chaine[$i]==$elt)
@@ -371,7 +336,7 @@ class BDD {
             return false;
         }
 
-        private function splitTime($time){
+        private static function splitTime($time){
             $time=str_replace(' ','',$time);
             $len=strlen($time);
             $days=0;
@@ -389,7 +354,7 @@ class BDD {
                         $minutes=explode('h',$reste)[1]-'0';
                 }
             }
-            if ( ! $this->in($time,'d') && ! $this->in($time,'h')) return $time;
+            if ( ! BDD::in($time,'d') && ! BDD::in($time,'h')) return $time;
             return $days*8*60+$hours*60+$minutes;
         }
         
@@ -415,7 +380,7 @@ class BDD {
                     }
                     else if ($key=='time'){
                         echo "<td class='$cls'>".$val."</td>";
-                        $globalTime+=$this->splitTime($val);
+                        $globalTime+=BDD::splitTime($val);
                     }
                     else if ($key=='id')
                         echo "
@@ -492,11 +457,11 @@ class BDD {
             }
         }
             
-        function logger($res){
+        private static function logger($res){
             echo "<script>console.log(\"".$res."\");</script>";
         }
 
-        function bissextile($annee) {
+        private static function bissextile($annee) {
             if( (is_int($annee/4) && !is_int($annee/100)) || is_int($annee/400)) {
                 return true;
             } else {
@@ -526,26 +491,16 @@ class BDD {
         }
 
         function showDay($d,$m,$year){
-            $months=array("Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre");
-            $days=array(
-                "Monday"=>"Lundi",
-                "Tuesday"=>"Mardi",
-                "Wednesday"=>"Mercredi",
-                "Thursday"=>"Jeudi",
-                "Friday"=>"Vendredi",
-                "Saturday"=>"Samedi",
-                "Sunday"=>"Dimanche"
-            );
             $day=$this->getDay("$d/$m/$year");
             $jour=explode(" ",$day)[0];
             $date=explode(" ",$day)[1];
             $fmt=str_replace('-','/',$date);
             $fmt=str_replace('/'.$year,'',$fmt);
             $index=($m-'0')-1;
-            $fmt=str_replace('/'.$m,' '.$months[$index],$fmt);
+            $fmt=str_replace('/'.$m,' '.$this->months[$index],$fmt);
             $numero=explode(' ',$fmt)[0];
             $mois=explode(' ',$fmt)[1];
-            $jour=$days[$jour];
+            $jour=$this->days[$jour];
             echo "
             <td>
                 <table class='pannelTask'>
@@ -570,7 +525,7 @@ class BDD {
             echo "</div>";
             $year=$year-'0';
             $fevrier=28;
-            if ($this->bissextile($year))
+            if (BDD::bissextile($year))
             $fevrier=29;
             $months=array(31,$fevrier,31,30,31,30,31,31,30,31,30,31);
             echo "<table class='calendar'>";
