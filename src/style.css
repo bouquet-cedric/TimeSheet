@@ -20,21 +20,6 @@
         width: 100%!important;
     }
     
-    .button {
-        background-color: blue;
-        cursor: pointer;
-        height: 0.5em;
-        border-radius: 50% 50% 0 0;
-        position: relative;
-    }
-    
-    .button:hover .invisible {
-        display: inline-block;
-        min-width: 7em;
-        max-width: 20em;
-        z-index: 20;
-    }
-    
     td,
     th {
         border: 1px solid black;
@@ -210,13 +195,6 @@
         outline: 0;
     }
     
-    .calendus button {
-        border: none;
-        background: transparent;
-        cursor: pointer;
-        font-size: x-large;
-    }
-    
     .navbar {
         display: flex;
         flex-direction: column;
@@ -258,7 +236,7 @@
         background-color: white;
         margin: auto;
         width: 25%;
-        margin-bottom: 2em;
+        margin-bottom: 1em;
     }
     
     h4 {
@@ -375,4 +353,73 @@
         border-top: none;
         border-bottom: none;
         border: none;
+    }
+    
+     :root {
+        --daily: orange;
+        --non-working-day: lime;
+        --environnement: red;
+        --task: grey;
+    }
+    
+    .calendus button {
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        font-size: x-large;
+    }
+    
+    .button {
+        background-color: var(--task);
+        cursor: pointer;
+        height: 0.5em;
+        border-radius: 50% 50% 0 0;
+        position: relative;
+    }
+    
+    .button:hover .invisible {
+        display: inline-block;
+        min-width: 7em;
+        max-width: 20em;
+        z-index: 20;
+    }
+    
+    .daily {
+        background-color: var(--daily);
+    }
+    
+    .task {
+        background-color: var(--task);
+    }
+    
+    .environnement {
+        background-color: var(--environnement);
+    }
+    
+    .non-working-day {
+        background-color: var(--non-working-day);
+    }
+    
+    .legendePlanning .legend {
+        display: inline-block;
+        min-width: 2em;
+        min-height: 0.5em;
+        margin-right: 0.5em;
+        border: 1px solid black;
+        border-radius: 25px;
+    }
+    
+    .legendePlanning h4 {
+        margin-top: 0;
+        margin-bottom: 0;
+    }
+    
+    .legendePlanning {
+        background-color: wheat;
+        position: absolute;
+        font-family: 'Courier New', Courier, monospace;
+        bottom: 0.5em;
+        left: 2em;
+        border: 1px solid black;
+        padding: 0 0.5em;
     }

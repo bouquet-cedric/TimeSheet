@@ -98,28 +98,37 @@ class BDD {
             $this->DB->query("drop table if exists copy_tasks;");
             $this->createTasks("copy_tasks");
             $this->DB->query("insert into copy_tasks (jira, date_t, time_t, date, time, comment, day, month, year)
-             select jira, date_t, time_t, date, time, comment, day, month, year from tasks;");
+             SELECT jira, date_t, time_t, date, time, comment, day, month, year from tasks
+             WHERE id in ( SELECT id
+                    FROM tasks 
+                    ORDER BY year desc,month desc,day desc) order by year,month,day,jira;");
         }
 
         function addTask($jira,$date,$time,$comment){
-            $day=substr($date,0,2);
-            $mon=substr($date,3,2);
-            $year=substr($date,6,4);
-            $isUpdated = $this->updateTime($day,$mon,$year,$jira,$time);
-            if (! $isUpdated){
-                $stmt=$this->DB->prepare("insert into tasks (jira,date_t,time_t,date,time,comment,day,month,year) values (:jira,:dt,:tt,:date,:time,:com,:d,:m,:y);");
-                $datum=$this->getToday();
-                $stmt->execute(array(
-                    'jira' => $jira,
-                    'dt' => $datum[0],
-                    'tt' => $datum[1],
-                    'date' => $this->getDay($date),
-                    'time' => $time,
-                    'com' => $comment,
-                    'd' => $day,
-                    'm' => $mon,
-                    'y' => $year 
-                ));
+            try {
+                $day=substr($date,0,2);
+                $mon=substr($date,3,2);
+                $year=substr($date,6,4);
+                $isUpdated = $this->updateTime($day,$mon,$year,$jira,$time);
+                if (! $isUpdated){
+                    $stmt=$this->DB->prepare("insert into tasks (jira,date_t,time_t,date,time,comment,day,month,year) values (:jira,:dt,:tt,:date,:time,:com,:d,:m,:y);");
+                    $datum=$this->getToday();
+                    $stmt->execute(array(
+                        'jira' => $jira,
+                        'dt' => $datum[0],
+                        'tt' => $datum[1],
+                        'date' => $this->getDay($date),
+                        'time' => $time,
+                        'com' => $comment,
+                        'd' => $day,
+                        'm' => $mon,
+                        'y' => $year 
+                    ));
+                }
+            }
+            catch(Exception $e){
+                echo $e->getMessage();
+                die();
             }
         }
 
@@ -425,7 +434,7 @@ class BDD {
             $timing = ($globalHours>0)?"$timhours ".($globalMinutes>0?"et $timinutes":""):$timinutes;
             echo "<h4>Temps total : $timing</h4>";
         }
- 
+
         function getPannelTaskAt($date){
             $req="select jira, comment, time, id from tasks where date like '%$date%' order by jira asc;";
             $stmt=$this->DB->prepare($req);
@@ -435,23 +444,50 @@ class BDD {
 
                 $res="";
                 for ($i=0;$i<count($result);$i++){
-                    $res=$res."<td class='button'>";
+                    // $res=$res."<td class='button'>";
+                    $head="<td class='button";
+                    $line="";
+                    $classSup="";
                     foreach ($result[$i] as $key => $val){
                         if ($key=='jira'){
-                            $res=$res."<div class='invisible'><a target='_blank' class='jira' href='https://jira.worldline.com/browse/".$val."'>$val</a>";
+                            $line=$line."<div class='invisible'><a target='_blank' class='jira' href='https://jira.worldline.com/browse/".$val."'>$val</a>";
                         }
                         else if ($key=='id'){
-                            $res=$res."<form action='deleteTask.php' method='post'>".
+                            $line=$line."<form action='deleteTask.php' method='post'>".
                             "<input type='hidden' value='".$val."' name='id'/>".
                             "<input type='hidden' value='planning.php' name='redirect'/>".
                             "<input type='submit' class='delete' value='X' name='deleteTask'/>".
                             "</form></div>";
                         }
-                        else if ($key=='comment' || $key='time'){
-                            $res=$res."<br><span class='planningCom'>$val</span>";
+                        else if ($key=='comment'){
+                            $line=$line."<br><span class='planningCom'>$val</span>";
+                            switch ($val) {
+                                case stripos($val,"daily") !== false:
+                                    $classSup=$classSup." ".$val;
+                                    break;
+                                case stripos($val,"environnement") !== false:
+                                    $classSup=$classSup." environnement";
+                                    break;
+                                case stripos($val,"environment") !== false:
+                                    $classSup=$classSup." environnement";
+                                    break;
+                                case stripos($val,"non working day") !== false:
+                                    $classSup=$classSup." non-working-day";
+                                    break;
+                                case stripos($val,"congés") !== false:
+                                    $classSup=$classSup." non-working-day";
+                                    break;
+                                default:
+                                    break;
+                            }
+                            $head=$head.$classSup."'>";
+                        }
+                        else if ($key=='time'){
+                            $line=$line."<br><span class='planningCom'>$val</span>";
                         }
                     }
-                    $res=$res."</td>";
+                    $line=$line."</td>";
+                    $res=$res.$head.$line;
                 }
                 return $res;
             }
@@ -525,8 +561,7 @@ class BDD {
             echo "</div>";
             $year=$year-'0';
             $fevrier=28;
-            if (BDD::bissextile($year))
-            $fevrier=29;
+            if (BDD::bissextile($year)) $fevrier=29;
             $months=array(31,$fevrier,31,30,31,30,31,31,30,31,30,31);
             echo "<table class='calendar'>";
             for ($i=0;$i<12;$i++){
@@ -539,13 +574,20 @@ class BDD {
                 }
                 echo "</tr>";
             }
-            echo "</table>";
-            echo "<div class='manager_month'>";
-            echo "<button onclick='nextMonth()'>&#9654;</button>";
-            echo "</div>";
-            echo "<script>
-            initMonth();
-            isActive=true;
+            echo "</table>
+            <div class='manager_month'>
+                <button onclick='nextMonth()'>&#9654;</button>
+            </div>
+            <footer class='legendePlanning'>
+                <h4>Légende</h4>
+                <span class='legend daily'></span><span>Daily</span><br>
+                <span class='legend non-working-day'></span><span>Jours non travaillés</span><br>
+                <span class='legend environnement'></span><span>Problèmes d'environnement</span><br>
+                <span class='legend task'></span><span>Ticket</span><br>
+            </footer>
+            <script>
+                initMonth();
+                isActive=true;
             </script>";
         }
     }

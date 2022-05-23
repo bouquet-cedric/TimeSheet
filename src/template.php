@@ -1,10 +1,10 @@
 <?php
     require_once('BDD.php');
 
-    function addLink($page,$name){
+    function addLink($page,$name,$title="Click me"){
         echo "
             <form action='$page' method='post'>
-                <input type='submit' value='$name'/>
+                <input type='submit' title='$title' value='$name'/>
             </form>";
     }
 
