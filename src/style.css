@@ -82,8 +82,7 @@
         font-size: larger;
     }
     
-    input[name=getCalendar],
-    input[name=getDay] {
+    input[value=Afficher] {
         color: black;
         font-weight: bold;
         font-family: cursive;
@@ -241,6 +240,12 @@
     
     h4 {
         text-indent: 2em;
+    }
+    
+    .timeday {
+        margin-top: 0;
+        margin-bottom: 0;
+        font-family: cursive;
     }
     
     .formular {
@@ -422,4 +427,9 @@
         left: 2em;
         border: 1px solid black;
         padding: 0 0.5em;
+    }
+    
+    .taskTime {
+        text-indent: 2em;
+        display: inline-block;
     }

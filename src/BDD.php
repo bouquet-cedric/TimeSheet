@@ -220,6 +220,85 @@ class BDD {
             echo "</div>";
         }
 
+        function getByTask(){
+            $req="select distinct jira,comment from tasks order by jira asc;";
+            $stmt=$this->DB->prepare($req);
+            $stmt->execute();
+            $result = $stmt->fetchAll();
+            echo "<div class='detailDate'>";
+            echo "<form action='' method='post' autocomplete='off' class='formular'>";
+            echo "<input autofocus class='dater' list='tasks' name='task' required/>";
+            echo "<datalist id='tasks'>";
+            foreach($result as $k => $v){
+                echo "<option value='".$v['jira']."'>".$v['comment']."</option>";
+            }
+            echo "</datalist>";
+            echo "<input type='submit' name='getTask' value='Afficher'/>";
+            echo "</form>";
+            if (isset($_POST['getTask'])){
+                $task=$_POST['task'];
+                $this->getDetailTask($task);
+            }
+            else if (isset($_GET['task'])){
+                $task=$_GET['task'];
+                $this->getDetailTask($task);
+            }
+            echo "</div>";
+        }
+
+        private function getDetailTask($task){
+            $stmt= $this->DB->prepare("select * from tasks where jira=:task");
+            $stmt->execute(array(
+                'task'=>$task
+            ));
+            $result=$stmt->fetchAll();
+            $Totaltime=0;
+            $com=array();
+            $cptCom=0;
+            $days=array();
+            $cptDays=0;
+            $times=[];
+            $cptTimes=0;
+            for($i=0;$i<count($result);$i++){
+                foreach ($result[$i] as $k=>$v){
+                    if ($k == "time"){
+                        $Totaltime+=$this->splitTime($v);
+                        $times[$cptTimes]=$this->splitTime($v);
+                        $cptTimes++;
+                    }
+                    else if ($k == "comment"){
+                        $com[$cptCom] = $v;
+                        $cptCom++;
+
+                    }
+                    else if ($k == "date"){                    
+                        $days[$cptDays]=$this->getFormat($v);
+                        $cptDays++;
+                    }
+                }
+            }
+            echo "<h3>$task</h3>";
+            echo "<h4>Jours : </h4>";
+            echo "<ul>";
+            for ($i=0;$i<count($times);$i++)
+                echo "<li class='timeday'>$days[$i] - $com[$i] : $times[$i] minutes</li>";
+            echo "</ul>";
+            $total=$Totaltime;
+            $globalDays=floor($Totaltime/480);
+            $Totaltime-=$globalDays * 480;
+            $globalHours=floor($Totaltime/60);
+            $Totaltime-=$globalHours * 60;
+            $globalMinutes=$Totaltime;
+            $formatTime="";
+            if ($globalDays>0)
+                $formatTime="$globalDays ".($globalDays>1?"jours":"jour");
+            if ($globalHours>0)
+                $formatTime=$formatTime." $globalHours ".($globalHours>1?"heures":"heure");
+            if ($globalMinutes>0)
+                $formatTime=$formatTime." $globalMinutes ".($globalMinutes>1?"minutes":"minute");
+            echo "<br><span class='taskTime'><u>Temps total :</u> $total minutes, soit $formatTime</span>";
+        }
+
         private static function addTimes($time1,$time2){
             $sp1=BDD::splitTime($time1);
             $sp2=BDD::splitTime($time2);

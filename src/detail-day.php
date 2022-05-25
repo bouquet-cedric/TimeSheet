@@ -14,7 +14,7 @@
     include('./template.php');
     $db=new BDD();
     echo "<div class='center'>";
-    echo "<h2>TimeSheet - Détail</h2>";
+    echo "<h2>TimeSheet - Day</h2>";
     $db->getDates();
     echo "</div>";
 ?>
