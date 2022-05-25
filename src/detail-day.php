@@ -13,7 +13,7 @@
     <?php
     include('./template.php');
     $db=new BDD();
-    echo "<div class='center'>";
+    echo "<div class='center timeday'>";
     echo "<h2>TimeSheet - Day</h2>";
     $db->getDates();
     echo "</div>";

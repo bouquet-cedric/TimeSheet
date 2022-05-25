@@ -13,7 +13,7 @@
     <?php
     include('./template.php');
     $db=new BDD();
-    echo "<div class='center'>";
+    echo "<div class='center travail'>";
     echo "<h2>TimeSheet - Task</h2>";
     $db->getByTask();
     echo "</div>";

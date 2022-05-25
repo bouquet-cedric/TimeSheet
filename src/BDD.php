@@ -62,15 +62,20 @@ class BDD {
         }
 
         function addSave(){
+            
             echo "
-            <form action='' method='post'>
-                <input type='submit' title='Créer sauvegarde' value='&#128190;' name='makeSave'/>
-            </form>";
+            <div class='flexibus'>
+                <form action='' method='post'>
+                    <input type='submit' name='makeSave' title=\"Créer sauvegarde\" value=\"&#128190;\"/>
+                </form>
+                <span title=\"Créer sauvegarde\">Sauvegarde</span>
+            </div>
+            ";
             if (isset($_POST['makeSave'])){
                 $this->makeSave();
             }
         }
-            
+        
         function loadSave(){
             $requete="SELECT name FROM sqlite_master WHERE type='table' AND name='copy_tasks'";
             $stmt=$this->DB->prepare($requete);
@@ -78,9 +83,13 @@ class BDD {
             $res=$stmt->fetch();
             if ($res['name'] == 'copy_tasks') {
                 echo "
-                <form action='' method='post'>
-                    <input type='submit' title='Charge la dernière sauvegarde\n&#9888;Efface les valeurs courantes' value='&#10227' name='loadSave'/>
-                </form>";
+                <div class='flexibus'>
+                    <form action='' method='post'>
+                        <input type='submit' name='loadSave' title=\"Charge la dernière sauvegarde\n&#9888;Efface les valeurs courantes\" value=\"&#10227;\"/>
+                    </form>
+                    <span title=\"Charge la dernière sauvegarde\n&#9888;Efface les valeurs courantes\">Restauration</span>
+                </div>
+                ";
             }
             if (isset($_POST['loadSave'])){
                 $tmp = new BDD();
@@ -188,6 +197,8 @@ class BDD {
             return $jour." $d ".$mois." ".$y;
         }
 
+
+
         function getDates(){
             $req="select distinct date from tasks order by year,month,day asc;";
             $stmt=$this->DB->prepare($req);
@@ -221,18 +232,9 @@ class BDD {
         }
 
         function getByTask(){
-            $req="select distinct jira,comment from tasks order by jira asc;";
-            $stmt=$this->DB->prepare($req);
-            $stmt->execute();
-            $result = $stmt->fetchAll();
-            echo "<div class='detailDate'>";
             echo "<form action='' method='post' autocomplete='off' class='formular'>";
-            echo "<input autofocus class='dater' list='tasks' name='task' required/>";
-            echo "<datalist id='tasks'>";
-            foreach($result as $k => $v){
-                echo "<option value='".$v['jira']."'>".$v['comment']."</option>";
-            }
-            echo "</datalist>";
+            echo "<input autofocus class='dater' list='allJiras' name='task' required/>";
+            echo $this->getDataListJirasComment();
             echo "<input type='submit' name='getTask' value='Afficher'/>";
             echo "</form>";
             if (isset($_POST['getTask'])){
@@ -243,7 +245,6 @@ class BDD {
                 $task=$_GET['task'];
                 $this->getDetailTask($task);
             }
-            echo "</div>";
         }
 
         private function getDetailTask($task){
@@ -277,9 +278,10 @@ class BDD {
                     }
                 }
             }
-            echo "<h3>$task</h3>";
-            echo "<h4>Jours : </h4>";
-            echo "<ul>";
+            echo "<h3>$task</h3>
+                <nav class='detailTask'>
+                    <h4>Jours : </h4>
+                <ul>";
             for ($i=0;$i<count($times);$i++)
                 echo "<li class='timeday'>$days[$i] - $com[$i] : $times[$i] minutes</li>";
             echo "</ul>";
@@ -296,7 +298,8 @@ class BDD {
                 $formatTime=$formatTime." $globalHours ".($globalHours>1?"heures":"heure");
             if ($globalMinutes>0)
                 $formatTime=$formatTime." $globalMinutes ".($globalMinutes>1?"minutes":"minute");
-            echo "<br><span class='taskTime'><u>Temps total :</u> $total minutes, soit $formatTime</span>";
+            echo "<br><span class='taskTime'><u>Temps total :</u> $total minutes, soit $formatTime</span>
+            </nav>";
         }
 
         private static function addTimes($time1,$time2){
@@ -341,6 +344,20 @@ class BDD {
                 }
             }
             return $execute;
+        }
+
+        function getDataListFromDates(){
+            $req="SELECT distinct day,month,year FROM tasks";
+            $stmt=$this->DB->prepare($req);
+            $stmt->execute();
+            $result = $stmt->fetchAll();
+            $datesList="<datalist id='allDates'>";
+            foreach ($result as $key => $val){
+                $formatTime=$this->getRealNumber($val['day']).'/'.$this->getRealNumber($val['month']).'/'.$this->getRealNumber($val['year']);
+                $datesList=$datesList."<option value='".$formatTime."'/>";
+            }
+            $datesList="$datesList</datalist>";
+            return $datesList;
         }
 
         function getDataListJirasComment(){
@@ -401,9 +418,9 @@ class BDD {
             echo "<form autocomplete='off' action='addTask.php' method='post'>
             <tfoot>
             <tr>
-            <td class='jira'><input type='list' id='jiras-input' oninput='fillComment()' placeholder='jira' name='jira' list='allJiras' autofocus required/>".$this->getDataListJirasComment()."</td>
+            <td class='jira'><input type='list' id='jiras-input' onkeydown='fillComment()' onchange='fillComment()' oninput='fillComment()' placeholder='jira' name='jira' list='allJiras' autofocus required/>".$this->getDataListJirasComment()."</td>
             <td class='comment'><input type='text' name='com' id='commentary' required placeholder='commentaire'/> </td>
-            <td class='date'><input type='text' name='date' placeholder='00/00/0000' pattern='[0-9]{2}/[0-9]{2}/[0-9]{4}' required/> </td>
+            <td class='date'><input type='list' list='allDates' name='date' placeholder='00/00/0000' pattern='[0-9]{2}/[0-9]{2}/[0-9]{4}' required/>".$this->getDataListFromDates()."</td>
             <td class='time'><input type='text' name='time' placeholder='1d 1h 30' pattern='-*([0-9]{1,2} *d)* *([0-9]{1,2} *h)* *[0-9]{0,2}' required/> </td>
             <td class='date_t'><input disabled placeholder='autocomplete'/> </td>
             <td class='time_t'><input disabled placeholder='autocomplete'/> </td>
@@ -489,8 +506,8 @@ class BDD {
             $format=str_replace('-','/',$format);
             echo "<form autocomplete='off' action='addTask.php' method='post'>
             <tfoot>
-            <tr>
-            <td class='jira'><input type='list' id='jiras-input' oninput='fillComment()' placeholder='jira' name='jira' list='allJiras' autofocus required/>".$this->getDataListJirasComment()."</td>
+            <tr class='detailday'>
+            <td class='jira'><input type='list' id='jiras-input' oninput='fillComment()' onkeydown='fillComment()' onchange='fillComment()' placeholder='jira' name='jira' list='allJiras' autofocus required/>".$this->getDataListJirasComment()."</td>
             <td class='comment'><input type='text' name='com' id='commentary' required placeholder='commentaire'/> </td>
             <input type='hidden' name='date' value='$format'/>
             <input type='hidden' name='redirect' value='detail-day.php?datas=$date'/>

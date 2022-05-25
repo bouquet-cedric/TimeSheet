@@ -1,19 +1,23 @@
 <?php
     require_once('BDD.php');
 
-    function addLink($page,$name,$title="Click me"){
+    function addLink($page,$icon,$name,$title="Click me"){
         echo "
-            <form action='$page' method='post'>
-                <input type='submit' title=\"$title\" value='$name'/>
-            </form>";
+            <div class='flexibus'>
+                <form action='$page' method='post'>
+                    <input type='submit' title=\"$title\" value=\"$icon\"/>
+                </form>
+                <span title=\"$title\">$name</span>
+            </div>
+            ";
     }
 
     function addNavBar(){
         echo "<div class='navbar'>";
-        addLink('index.php','&#127968;',"Affiche toutes les saisies");
-        addLink('planning.php','&#128197;',"Affiche le détail par année");
-        addLink('detail-day.php','&#128195;',"Affiche le détail d'une journée");
-        addLink('detail-task.php','&#128203;',"Affiche le détail d'une tâche");
+        addLink('index.php','&#127969;','TimeSheet',"Affiche toutes les saisies");
+        addLink('planning.php','&#128197;','Planning',"Affiche le détail par année");
+        addLink('detail-day.php','&#128198;','Tâches par jour',"Affiche le détail d'une journée");
+        addLink('detail-task.php','&#128396;','Tâches par Jira',"Affiche le détail d'une tâche");
         $db = new BDD();
         $db->addSave();
         $db->loadSave();

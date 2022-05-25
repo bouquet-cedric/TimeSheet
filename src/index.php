@@ -15,7 +15,7 @@
     require_once('BDD.php');
     include('./template.php');
     $mydb=new BDD();
-    echo "<div class='center'>";
+    echo "<div class='center timesheet'>";
     echo "<h2>TimeSheet</h2>";
     $mydb->getTasks(100);
     echo "</div>";

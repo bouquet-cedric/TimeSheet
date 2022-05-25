@@ -13,7 +13,7 @@
 
     include('./template.php');
     $db=new BDD();
-    echo "<div class='center'>";
+    echo "<div class='center planning'>";
     echo "<h2>TimeSheet - Planning</h2>";
     $db->addCalendar();
     echo "</div>";
