@@ -15,7 +15,7 @@
     function addNavBar(){
         echo "<div class='navbar'>";
         addLink('index.php','&#127969;','TimeSheet',"Affiche toutes les saisies");
-        addLink('planning.php','&#128197;','Planning',"Affiche le détail par année");
+        addLink('planning.php','&#128197;','Tâches par mois',"Affiche le détail par année");
         addLink('detail-day.php','&#128198;','Tâches par jour',"Affiche le détail d'une journée");
         addLink('detail-task.php','&#128396;','Tâches par Jira',"Affiche le détail d'une tâche");
         $db = new BDD();
