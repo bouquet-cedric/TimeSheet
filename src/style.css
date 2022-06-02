@@ -11,7 +11,7 @@ h2 {
     text-align: center;
     font-family: cursive;
     background-color: orange;
-    width: 20%;
+    width: 40%;
     margin: auto;
     color: white;
     border-radius: 20px;
@@ -38,12 +38,8 @@ tr {
     width: 100%!important;
 }
 
-td,
-th {
-    border: 1px solid black;
-}
-
 table {
+    position: relative;
     border-collapse: collapse;
     width: 95%;
     margin: auto;
@@ -100,7 +96,9 @@ input.delete {
     font-size: larger;
 }
 
-input[value=Afficher] {
+input[type=submit][value=Afficher],
+input[type=submit][value=Enregistrer],
+.link_button {
     color: black;
     font-weight: bold;
     font-family: cursive;
@@ -116,6 +114,7 @@ th {
     min-width: 1em;
     min-height: 0.2em;
     text-align: center;
+    border: 1px solid black;
 }
 
 input:disabled::placeholder {
@@ -156,11 +155,6 @@ input:disabled {
     border: 1px solid white;
     background-color: black;
     color: whitesmoke;
-}
-
-.calendar table {
-    width: 100%;
-    height: 100%;
 }
 
 .calendar table {
@@ -215,7 +209,6 @@ input:not(input[type=submit]):valid {
 .navbar {
     display: flex;
     flex-direction: column;
-    width: 100%;
     position: absolute;
     top: 0;
     left: 0;
@@ -264,10 +257,6 @@ input:not(input[type=submit]):valid {
     background-size: 100% 100%;
 }
 
-.center.planning {
-    background-image: url("./images/planning.png");
-}
-
 .center.travail {
     background-image: url("./images/travail.png");
 }
@@ -278,6 +267,19 @@ input:not(input[type=submit]):valid {
 
 .center.timeday {
     background-image: url("./images/timeday.png");
+}
+
+.center.teletravail {
+    background-image: url("./images/teletravail.png");
+}
+
+.set-form {
+    background-color: rgba(255, 235, 205, 0.8);
+    width: 50%;
+    margin-left: auto;
+    margin-right: auto;
+    border-radius: 10% 20px 10% 20px;
+    border: none;
 }
 
 .detailTask {
@@ -312,13 +314,13 @@ h3 {
 
 .timeday h4 {
     margin-left: 2em;
-    text-indent: 1em;
     border: 1px solid black;
     background-color: orange;
     border-radius: 10px;
-    width: 20%;
+    width: auto;
     min-width: 15%;
     max-width: 30%;
+    text-align: center;
 }
 
 .travail h4 {
@@ -340,6 +342,15 @@ h3 {
     align-items: center;
 }
 
+.absolute {
+    flex-direction: column;
+    justify-content: space-around;
+}
+
+.absolute>div {
+    padding: 0.5em 0;
+}
+
 .dater {
     border: 1px solid #ccc;
     margin-right: 2em;
@@ -350,30 +361,16 @@ h3 {
 .tasks-list {
     position: relative;
     margin: auto;
-    margin-bottom: 30vh;
     min-height: 30em!important;
-    height: 20em!important;
-    max-height: 20em!important;
-    width: 75vw;
+    height: 70vh!important;
+    max-height: 50em!important;
+    width: 80vw;
     overflow-y: scroll;
     overflow-x: hidden;
 }
 
-.tasks-list tbody {
-    position: absolute;
-    max-height: 75vh;
-    overflow-y: scroll;
-    width: 80vw!important;
-}
-
-.tasks-list tfoot {
-    position: absolute;
-    margin-top: 75vh;
-    z-index: 100;
-}
-
-.tasks-list tbody,
-.tasks-list tfoot {
+.tasks-list>table {
+    height: 100%;
     width: 100%;
 }
 
@@ -385,23 +382,12 @@ h3 {
     text-align: center;
 }
 
-.tasks-list tbody,
-.tasks-list tfoot {
-    border-top: solid 1px;
-}
-
-th.jira,
-td.jira {
-    min-width: 15em;
-    width: 15em;
-    max-width: 15em;
-}
-
 th.time,
 td.time {
     min-width: 5em;
     width: 5em;
     max-width: 5em;
+    overflow: hidden;
 }
 
 th.update-time,
@@ -411,19 +397,48 @@ td.time_t {
     max-width: 8em;
 }
 
-th.commentaire,
+.header-list {
+    position: fixed;
+    width: 80vw;
+    transform: translateY(-100%);
+    display: flex;
+    flex-direction: row;
+    background-color: black;
+    color: white;
+    text-align: center;
+    text-transform: capitalize;
+}
+
+.footer-list {
+    position: fixed;
+    width: 80vw;
+    transform: translateY(50%);
+    display: flex;
+    flex-direction: row;
+    /* background-color: black; */
+    color: white;
+    text-align: center;
+    text-transform: capitalize;
+}
+
+td.jira {
+    min-width: 15em;
+    max-width: 15em;
+    width: 15em;
+}
+
 td.comment,
-th.date,
 td.date,
-th.update-date,
 td.date_t {
     min-width: 12em;
-    width: 12em;
+    width: 12em!important;
     max-width: 12em;
 }
 
-td.time input {
+td.time input,
+._time input {
     width: 80%;
+    overflow: hidden;
 }
 
 th.action,
@@ -516,4 +531,69 @@ td.id {
 .taskTime {
     text-indent: 2em;
     display: inline-block;
+}
+
+tr.teleDay td {
+    position: absolute!important;
+    top: 50%;
+    width: 50%;
+    background-color: transparent!important;
+    transform: translateY(-50%);
+    border: none;
+    font-size: xx-large;
+}
+
+tr.teleDay td.PM {
+    right: 0;
+    text-align: right;
+}
+
+tr.teleDay td.AM {
+    left: 0;
+    text-align: left;
+}
+
+tr.teleDay td.AM-down {
+    left: 0;
+    text-align: left;
+    transform: none;
+    bottom: 0;
+    top: auto;
+}
+
+.submenus {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    align-items: center;
+    justify-content: space-around;
+}
+
+.fleximenu {
+    width: 20%;
+    background-color: whitesmoke;
+    font-size: large;
+    text-align: center;
+    margin: 2em;
+    border-radius: 25px;
+    white-space: pre-line;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-around;
+}
+
+.fleximenu>form {
+    width: 100%;
+    height: 100%;
+}
+
+.link_button {
+    font-size: 72px;
+    appearance: initial;
+    background-color: transparent;
+    border: none;
+    padding: 0.5em;
+    width: 100%;
+    height: 100%;
 }

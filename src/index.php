@@ -8,17 +8,20 @@
     <link rel="stylesheet" href="style.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
     <script src="./script.js"></script>
+    <script src="./dimension.js"></script>
     <link rel="stylesheet" href="scrollbar.css">
 </head>
 <body>
     <?php
     require_once('BDD.php');
     include('./template.php');
-    $mydb=new BDD();
-    echo "<div class='center timesheet'>";
-    echo "<h2>TimeSheet</h2>";
-    $mydb->getTasks(100);
-    echo "</div>";
+    $db=new BDD();
+    assert($db->getDB()!=null);
+    if ($db->getDB()!=null){
+        echo "<div class='center timesheet'><h2>TimeSheet</h2>";
+        $db->getTasks(100);
+        echo "</div>";
+    }
     
 ?>
 

@@ -3,14 +3,13 @@
 var actif = 1;
 var isActive = false;
 
-function applyKey(e) {
-    let evt = e || window.event;
+function applyKey(event) {
+    let evt = event || window.event;
     if (isActive) {
-        if (e.keyCode == '37') {
-            console.log("LEFT");
+        if (evt.keyCode == '37') {
             previousMonth();
         }
-        if (e.keyCode == '39')
+        if (evt.keyCode == '39')
             nextMonth();
     }
 }

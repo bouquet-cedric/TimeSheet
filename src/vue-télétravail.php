@@ -4,21 +4,21 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TimeSheet - Détail</title>
+    <title>TimeSheet - Télétravail</title>
     <link rel="stylesheet" href="style.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-    <script src="./script.js"></script>
+    <script src="./teletravail.js"></script>
 </head>
 <body>
     <?php
+
     include('./template.php');
     $db=new BDD();
-    if ($db->getDB()!=null){
-        echo "<div class='center travail'>";
-        echo "<h2>TimeSheet - Task</h2>";
-        $db->getByTask();
-        echo "</div>";
-    }
+    echo "<div class='center teletravail'>";
+    echo "<h2>TimeSheet - Télétravail</h2>";
+    echo "<h3>Vue par mois</h3>";
+    $db->addCalendar(true);
+    echo "</div>";
+
 ?>
 
 </body>

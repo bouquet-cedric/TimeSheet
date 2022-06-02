@@ -13,10 +13,12 @@
     <?php
     include('./template.php');
     $db=new BDD();
-    echo "<div class='center timeday'>";
-    echo "<h2>TimeSheet - Day</h2>";
-    $db->getDates();
-    echo "</div>";
+    if ($db->getDB()!=null){
+        echo "<div class='center timeday'>";
+        echo "<h2>TimeSheet - Day</h2>";
+        $db->getDates();
+        echo "</div>";
+    }
 ?>
 
 </body>

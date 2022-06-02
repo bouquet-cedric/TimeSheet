@@ -10,6 +10,6 @@
         die();
     }
     $redirect='index.php';
-    if (isset($_POST['redirect'])) $redirect=$_POST['redirect'];
+    if (isset($_POST['redirect'])) {$redirect=$_POST['redirect'];}
     header('Location: '.$redirect);
 ?>

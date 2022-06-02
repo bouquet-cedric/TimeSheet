@@ -1,0 +1,6 @@
+projectKey=php
+serverUrl=http://localhost:18546
+serverVersion=9.4.0.54424
+dashboardUrl=http://localhost:18546/dashboard?id=php
+ceTaskId=AYEmpE8BR5QMu4paBc7a
+ceTaskUrl=http://localhost:18546/api/ce/task?id=AYEmpE8BR5QMu4paBc7a
