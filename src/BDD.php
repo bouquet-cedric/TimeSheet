@@ -60,12 +60,13 @@ class Utility {
                 $line=$line."<br><span class='planningCom'>$val</span>";
             }
         }
-        $line=$line."</td>";
+        $line="$line</td>";
         return $head.$line;
     }
 
     public static function getRealNumber($champDate){
-        return $champDate>9?$champDate:'0'.$champDate;
+        $isMenorTen=($champDate[0]=='0'?$champDate:'0'.$champDate);
+        return $champDate>9?$champDate:$isMenorTen;
     }
 
     public static function moment($val){
@@ -109,6 +110,25 @@ class Utility {
                 break;
             case 'no-work':
                 $res='&#129523;';
+                break;
+            default:
+                $res='';
+                break;
+        }
+        return $res;
+    }
+
+    public static function getPlaceFromTtValue($momentDay){
+        $res="";
+        switch($momentDay){
+            case 'home':
+                $res='Télétravail';
+                break;
+            case 'work':
+                $res='Bureau';
+                break;
+            case 'no-work':
+                $res='Absent';
                 break;
             default:
                 $res='';
@@ -200,7 +220,7 @@ class Times {
         return $formatTime;
     }
 
-    public static function getDate($date){
+    public static function getDate($date,$format=null){
         setlocale(LC_ALL,'fr_FR','French');
         setlocale(LC_TIME, 'fr_FR.utf8','fra');
         date_default_timezone_set('Europe/Paris');
@@ -212,19 +232,144 @@ class Times {
         $hours=Utility::getRealNumber($date['hours']);
         $minutes=Utility::getRealNumber($date['minutes']);
         $seconds=Utility::getRealNumber($date['seconds']);
-        $ftime=implode(':',[$hours,$minutes,$seconds]);
+        if ($format == "/") { $ftime=""; }
+        else if ($format == "HM") { $ftime=$hours.'h'.$minutes; }
+        else if ($format == "HMS") { $ftime=$hours.'h'.$minutes.'m'.$seconds.'s'; }
+        else { $ftime=implode(':',[$hours,$minutes,$seconds]); }
         return [$fdate,$ftime];
     }
 
-    public static function getToday(){
+    public static function getToday($format=null){
         $d=getdate();
-        return Times::getDate($d);
+        return Times::getDate($d,$format);
     }
     
     public static function getDay($day){
         $reformateDay=substr($day,3,3).substr($day,0,3).substr($day,-4);
         $d=getdate(strtotime($reformateDay));
         return Times::getDate($d)[0];
+    }
+
+    public static function getFullDateFR($key){
+        $date = Times::getDay(Utility::getRealNumber($key['day'])."/".Utility::getRealNumber($key['month'])."/".Utility::getRealNumber($key['year']));
+        $day = explode(" ",$date)[0];
+        $jour = Times::$days[$day];
+        return str_replace($day,$jour,$date);
+    }
+
+    public static function getFullDateFrFromRealDate($date){
+        $date=explode(' ',$date)[1];
+        $day=explode('-',$date)[0];
+        $month=explode('-',$date)[1];
+        $year=explode('-',$date)[2];
+        $key=[];
+        $key["day"] = $day;
+        $key["month"] = $month;
+        $key["year"] = $year;
+        return Times::getFullDateFR($key);
+    }
+}
+
+class Save {
+    static function loadSave(){
+        $db=new BDD();
+        $requete="SELECT name FROM sqlite_master WHERE type='table' AND name='copy_tasks'";
+        $stmt=$db->getDB()->prepare($requete);
+        $stmt->execute();
+        $res=$stmt->fetch();
+        if ($res['name'] == 'copy_tasks') {
+            echo "
+            <div class='flexibus'>
+                <form action='' method='post'>
+                    <input type='submit' name='loadSave' title=\"Charge la dernière sauvegarde\n&#9888;Efface les valeurs courantes\" value=\"&#10227;\"/>
+                </form>
+                <span title=\"Charge la dernière sauvegarde\n&#9888;Efface les valeurs courantes\">Recharge</span>
+            </div>
+            ";
+        }
+        if (isset($_POST['loadSave'])){
+            $db->reinitDatabase();
+            $db->getDB();
+            $db->getDB()->query("insert into tasks select * from copy_tasks;");
+        }
+    }
+
+    static function makeSave(){
+        $db=new BDD();
+        $db->getDB()->query("drop table if exists copy_tasks;");
+        $db->createTable("copy_tasks");
+        $db->getDB()->query("insert into copy_tasks (jira, date_t, time_t, date, time, comment, day, month, year)
+            SELECT jira, date_t, time_t, date, time, comment, day, month, year from tasks
+            WHERE id in ( SELECT id
+                FROM tasks 
+                ORDER BY year desc,month desc,day desc) order by year,month,day,jira;");
+    }
+
+    static function addSave(){
+        echo "
+        <div class='flexibus'>
+            <form action='' method='post'>
+                <input type='submit' name='makeSave' title=\"Créer sauvegarde\" value=\"&#128190;\"/>
+            </form>
+            <span title=\"Créer sauvegarde\">Archive</span>
+        </div>
+        ";
+        if (isset($_POST['makeSave'])){
+            Save::makeSave();
+        }
+    }
+
+    static function csvify(){
+        echo "
+        <div class='flexibus'>
+            <form action='' method='post'>
+                <button type='submit' name='makeCsv' title=\"Créer CSV\">
+                    <i class='fa-solid fa-file-csv'></i>
+                </button>
+            </form>
+            <span title=\"Créer CSV\">Créer CSV</span>
+        </div>
+        ";
+        if (isset($_POST['makeCsv'])){
+            Save::makeCsv();
+        }
+    }
+
+    static function makeCsv(){
+        $basename = getcwd()."/"."saves"."/".Times::getFullDateFrFromRealDate(Times::getToday()[0]);
+
+        $db=new BDD();
+        $stmt = $db->getDB()->prepare("select * from tasks;");
+        $stmt->execute();
+        $result = $stmt->fetchAll();
+
+        $filetasks = $basename." - travail réalisé.csv";
+        
+        try {
+            file_put_contents($filetasks,"Date;Jira;Commentaire;Temps\n", FILE_USE_INCLUDE_PATH);
+            foreach ($result as $key){
+                file_put_contents($filetasks,Times::getFullDateFR($key).";".$key['jira'].";".$key['comment'].";".$key['time']."\n",FILE_APPEND);
+            }
+        }
+        catch(Exception $e){
+            Utility::logger($e->getMessage());
+        }
+        
+        $stmt = $db->getDB()->prepare("select * from teletravail order by year,month,day;");
+        $stmt->execute();
+        $result = $stmt->fetchAll();
+        
+        $fileworkhouse = $basename." - télétravail.csv";
+
+        try {
+            file_put_contents($fileworkhouse,"Date;Matin;Après-midi\n", FILE_USE_INCLUDE_PATH);
+            foreach ($result as $key){
+                file_put_contents($fileworkhouse,Times::getFullDateFR($key).";".Utility::getPlaceFromTtValue($key['AM']).";".Utility::getPlaceFromTtValue($key['PM'])."\n",FILE_APPEND);
+            }
+        }
+        catch(Exception $e){
+            Utility::logger($e->getMessage());
+        }
     }
 }
 
@@ -247,41 +392,43 @@ class BDD {
         }
     }
 
-    function createTasks($name){
-        $this->DB->query('create table if not exists '.$name.' (
-            id integer primary key autoincrement,
-            jira varchar NOT NULL,
-            date_t date NOT NULL,
-            time_t time NOT NULL,
-            date date NOT NULL,
-            time varchar NOT NULL,
-            comment varchar,
-            day int,
-            month int,
-            year int
-        );');
-    }
+    function createTable($name){
+        if ($name == 'tasks' || $name == 'copy_tasks'){
+            $this->DB->query('create table if not exists '.$name.' (
+                id integer primary key autoincrement,
+                jira varchar NOT NULL,
+                date_t date NOT NULL,
+                time_t time NOT NULL,
+                date date NOT NULL,
+                time varchar NOT NULL,
+                comment varchar,
+                day int,
+                month int,
+                year int
+            );');
 
-    function createTeletravail(){
-        $this->DB->query('create table if not exists teletravail (
-            id integer primary key autoincrement,
-            AM varchar NOT NULL DEFAULT \'work\',
-            PM varchar NOT NULL DEFAULT \'work\',
-            day int,
-            month int,
-            year int,
-            constraint unicite_TT unique(day,month,year)
-        );');
+        }
+        else if ($name == 'télétravail'){
+            $this->DB->query('create table if not exists teletravail (
+                id integer primary key autoincrement,
+                AM varchar NOT NULL DEFAULT \'work\',
+                PM varchar NOT NULL DEFAULT \'work\',
+                day int,
+                month int,
+                year int,
+                constraint unicite_TT unique(day,month,year)
+            );');
+        }
     }
 
     function getDB(){
         try {
             if ($this->DB==null){
-                $this->DB=new PDO('sqlite:database.sqlite',"","",array(PDO::ATTR_PERSISTENT => true));
+                $this->DB=new PDO('sqlite:database.sqlite',"root","root",array(PDO::ATTR_PERSISTENT => true));
                 $this->DB->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
                 $this->DB->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-                $this->createTasks("tasks");
-                $this->createTeletravail();
+                $this->createTable("tasks");
+                $this->createTable("télétravail");
             }
             return $this->DB;
         }
@@ -291,59 +438,12 @@ class BDD {
         }
     }
 
-    function addSave(){
-        echo "
-        <div class='flexibus'>
-            <form action='' method='post'>
-                <input type='submit' name='makeSave' title=\"Créer sauvegarde\" value=\"&#128190;\"/>
-            </form>
-            <span title=\"Créer sauvegarde\">Sauvegarde</span>
-        </div>
-        ";
-        if (isset($_POST['makeSave'])){
-            $this->makeSave();
-        }
-    }
-    
-    function loadSave(){
-        $requete="SELECT name FROM sqlite_master WHERE type='table' AND name='copy_tasks'";
-        $stmt=$this->DB->prepare($requete);
-        $stmt->execute();
-        $res=$stmt->fetch();
-        if ($res['name'] == 'copy_tasks') {
-            echo "
-            <div class='flexibus'>
-                <form action='' method='post'>
-                    <input type='submit' name='loadSave' title=\"Charge la dernière sauvegarde\n&#9888;Efface les valeurs courantes\" value=\"&#10227;\"/>
-                </form>
-                <span title=\"Charge la dernière sauvegarde\n&#9888;Efface les valeurs courantes\">Restauration</span>
-            </div>
-            ";
-        }
-        if (isset($_POST['loadSave'])){
-            $tmp = new BDD();
-            $tmp->reinitDatabase();
-            $tmp->getDB();
-            $tmp->getDB()->query("insert into tasks select * from copy_tasks;");
-        }
-    }
-
-    function makeSave(){
-        $this->DB->query("drop table if exists copy_tasks;");
-        $this->createTasks("copy_tasks");
-        $this->DB->query("insert into copy_tasks (jira, date_t, time_t, date, time, comment, day, month, year)
-            SELECT jira, date_t, time_t, date, time, comment, day, month, year from tasks
-            WHERE id in ( SELECT id
-                FROM tasks 
-                ORDER BY year desc,month desc,day desc) order by year,month,day,jira;");
-    }
-
     function addTask($jira,$date,$time,$comment){
         try {
             $day=substr($date,0,2);
             $mon=substr($date,3,2);
             $year=substr($date,6,4);
-            $isUpdated = $this->updateTime($day,$mon,$year,$jira,$time);
+            $isUpdated = $this->updateTimeAndComment($day,$mon,$year,$jira,$time,$comment);
             if (! $isUpdated){
                 $stmt=$this->DB->prepare("insert into tasks (jira,date_t,time_t,date,time,comment,day,month,year) values (:jira,:dt,:tt,:date,:time,:com,:d,:m,:y);");
                 $datum=Times::getToday();
@@ -414,7 +514,7 @@ class BDD {
     function getByTask(){
         echo "<form action='' method='post' autocomplete='off' class='formular'>";
         echo "<input autofocus class='dater' list='allJiras' name='task' required/>";
-        echo $this->getDataListJirasComment();
+        echo $this->getDataList("allJiras");
         echo "<input type='submit' name='getTask' value='Afficher'/>";
         echo "</form>";
         if (isset($_POST['getTask'])){
@@ -467,7 +567,7 @@ class BDD {
         echo "</ul><br><span class='taskTime'><u>Temps total :</u> $Totaltime minutes, soit ".Times::real_time($Totaltime)."</span></nav>";
     }
 
-    function updateTime($day,$month,$year,$jira,$time){
+    function updateTimeAndComment($day,$month,$year,$jira,$time,$comment){
         $stmt=$this->DB->prepare("select * from tasks where day=:d and month=:m and year=:y;");
         $stmt->execute(array(
             'd' => $day,
@@ -482,13 +582,14 @@ class BDD {
                 if ($k == 'jira' && $v == $jira){
                     $finalTime=Times::addTimes($elt['time'],$time);
                     $execute=true;
-                    $stmt=$this->DB->prepare("update tasks set time = :time where jira=:j and day=:d and month=:m and year=:y;");
+                    $stmt=$this->DB->prepare("update tasks set time = :time, comment = :com where jira=:j and day=:d and month=:m and year=:y;");
                     $stmt->execute(array(
                         'd' => $day,
                         'm' => $month,
                         'y' => $year,
                         'j' => $jira,
-                        'time' => $finalTime
+                        'time' => $finalTime,
+                        'com' => $comment
                     ));
                 }
             }
@@ -496,39 +597,35 @@ class BDD {
         return $execute;
     }
 
-    function getDataListFromDates(){
-        $req="SELECT distinct day,month,year FROM tasks";
-        $stmt=$this->DB->prepare($req);
-        $stmt->execute();
-        $result = $stmt->fetchAll();
-        $datesList="<datalist id='allDates'>";
-        foreach ($result as $val){
-            $formatTime=Utility::getRealNumber($val['day']).'/'.Utility::getRealNumber($val['month']).'/'.Utility::getRealNumber($val['year']);
-            $datesList=$datesList."<option value='".$formatTime."'/>";
-        }
-        $datesList="$datesList</datalist>";
-        return $datesList;
-    }
-
-    function getDataListJirasComment(){
-        $req="SELECT distinct jira, comment FROM tasks";
-        $stmt=$this->DB->prepare($req);
-        $stmt->execute();
-        $result = $stmt->fetchAll();
-        $jiraList="<datalist id='allJiras'>";
-        for ($i=0;$i<count($result);$i++){
-            foreach ($result[$i] as $key => $val){
-                if ($key=='jira'){
-                    $jira=$val;
-                }
-                else if ($key=='comment'){
-                    $comment=$val;
-                }
+    function getDataList($name){
+        if ($name == "allDates"){        
+            $req="SELECT distinct day,month,year FROM tasks";
+            $stmt=$this->DB->prepare($req);
+            $stmt->execute();
+            $result = $stmt->fetchAll();
+            $datesList="<datalist id='allDates'>";
+            foreach ($result as $val){
+                $formatTime=Utility::getRealNumber($val['day']).'/'.Utility::getRealNumber($val['month']).'/'.Utility::getRealNumber($val['year']);
+                $datesList=$datesList."<option value='".$formatTime."'/>";
             }
-            $jiraList="$jiraList<option comment='$comment' value='$jira'>$comment</option>";
+            $datesList="$datesList</datalist>";
+            return $datesList;
         }
-        $jiraList="$jiraList</datalist>";
-        return $jiraList;
+        else if ($name == "allJiras"){
+            $req="SELECT distinct jira, comment FROM tasks";
+            $stmt=$this->DB->prepare($req);
+            $stmt->execute();
+            $result = $stmt->fetchAll();
+            $jiraList="<datalist id='allJiras'>";
+            for ($i=0;$i<count($result);$i++){
+                $jira=$result[$i]['jira'];
+                $comment=$result[$i]['comment'];
+                $jiraList="$jiraList<option comment='$comment' value='$jira'>$comment</option>";
+            }
+            $jiraList="$jiraList</datalist>";
+            return $jiraList;
+        }
+        return null;
     }
 
     function getTasks($number=10){
@@ -562,25 +659,29 @@ class BDD {
                         </form>
                     </td>";
                 }
+                else if ($key=='date' || $key == 'date_t'){
+                    $realDate=Times::getFullDateFrFromRealDate($val);
+                    echo "<td class='$cls $key'>$realDate</td>";
+                }
                 else {
                     echo "<td class='$cls $key'>$val</td>";
                 }
+            
             }
             echo "<tr>";
         }
         echo "</table><form autocomplete='off' action='addTask.php' method='post'>
         <div class='footer-list'>
-        <span class='_jira'><input type='list' id='jiras-input' onkeydown='fillComment()' onchange='fillComment()' oninput='fillComment()' placeholder='jira' name='jira' list='allJiras' autofocus required/>".$this->getDataListJirasComment()."</span>
+        <span class='_jira'><input type='list' id='jiras-input' onkeydown='fillComment()' onchange='fillComment()' oninput='fillComment()' placeholder='jira' name='jira' list='allJiras' autofocus required/>".$this->getDataList("allJiras")."</span>
         <span class='_comment'><input type='text' name='com' id='commentary' required placeholder='commentaire'/> </span>
-        <span class='_date'><input type='list' list='allDates' name='date' placeholder='00/00/0000' pattern='[0-9]{2}/[0-9]{2}/[0-9]{4}' required/>".$this->getDataListFromDates()."</span>
+        <span class='_date'><input type='list' list='allDates' name='date' placeholder='00/00/0000' pattern='[0-9]{2}/[0-9]{2}/[0-9]{4}' required/>".$this->getDataList("allDates")."</span>
         <span class='_time'><input type='text' name='time' placeholder='1d 1h 30' pattern='-*([0-9]{1,2} *d)* *([0-9]{1,2} *h)* *[0-9]{0,2}' required/> </span>
         <span class='_date_t'><input disabled placeholder='autocomplete'/> </span>
         <span class='_time_t'><input disabled placeholder='autocomplete'/> </span>
         <span class='_id'><input type='submit' name='addTask' value='+'/> </span>
         </div>
         </form>
-        ";
-        echo "</div>";
+        </div>";
     }
     
     function getTaskAt($date,$redirection=null){
@@ -628,7 +729,7 @@ class BDD {
         echo "<form autocomplete='off' action='addTask.php' method='post'>
         <tfoot>
         <tr class='detailday'>
-        <td class='jira'><input type='list' id='jiras-input' oninput='fillComment()' onkeydown='fillComment()' onchange='fillComment()' placeholder='jira' name='jira' list='allJiras' autofocus required/>".$this->getDataListJirasComment()."</td>
+        <td class='jira'><input type='list' id='jiras-input' oninput='fillComment()' onkeydown='fillComment()' onchange='fillComment()' placeholder='jira' name='jira' list='allJiras' autofocus required/>".$this->getDataList("allJiras")."</td>
         <td class='comment'><input type='text' name='com' id='commentary' required placeholder='commentaire'/> </td>
         <input type='hidden' name='date' value='$format'/>
         <input type='hidden' name='redirect' value='detail-day.php?datas=$date'/>
@@ -743,7 +844,13 @@ class BDD {
             $year=$_POST['year'];
             $momentum=$_POST['momentum'];
             $lieu=$_POST['lieu'];
-            $this->insertOrUpdateTeletravail($day,$month,$year,$momentum,$lieu);
+            try {
+                $this->insertOrUpdateTeletravail($day,$month,$year,$momentum,$lieu);
+            }
+            catch(Exception $e){
+                echo "<span class='erreur'>".$e->getMessage()."</span>";
+                die();
+            }
         }
     }
 
@@ -799,9 +906,10 @@ class BDD {
     }
     
     function showCalendar($year,$teletravail=false){
-        echo "<div class='manager_month'>";
-        echo "<button onclick='previousMonth()'>&#9664;</button>";
-        echo "</div>";
+        echo "
+        <div class='manager_month'>
+            <button onclick='previousMonth()'>&#9664;</button>
+        </div>";
         $year=$year-'0';
         $fevrier=28;
         if (Times::bissextile($year)) {$fevrier=29;}

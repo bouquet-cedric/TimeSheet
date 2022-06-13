@@ -6,19 +6,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TimeSheet - Télétravail</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://kit.fontawesome.com/e436041ab3.js" integrity="sha512-ZreHqndbQULz7vlWcNP43WUBs5tfxYaOb2ug2mdcQX7N4hbcdwev8Z4+aLZzyCXwjOJV7mJtkGY+51P4Og9W7w==" crossorigin="anonymous"></script>
     <script src="./teletravail.js"></script>
 </head>
 <body>
     <?php
 
     include('./template.php');
-    echo "<div class='center teletravail'>
-            <h2>TimeSheet - Télétravail</h2>
-            <div class='submenus'>";
-    addButtonLink("vue-télétravail.php","&#128187;","Vue télétravail","Planning des jours de télétravail par mois");
-    addButtonLink("déclaration-télétravail.php",'&#128220;',"Déclaration des jours de télétravail");
-    echo "</div>
-    </div>";
+    $db=new BDD();
+    echo "<div class='center teletravail'>";
+    echo "<h2>TimeSheet - Télétravail</h2>";
+    echo "<h3>Vue par mois</h3>";
+    $db->addCalendar(true);
+    echo "</div>";
 
 ?>
 

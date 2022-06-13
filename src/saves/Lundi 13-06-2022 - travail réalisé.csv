@@ -1,0 +1,85 @@
+Date;Jira;Commentaire;Temps
+Mercredi 11-05-2022;ODCNG-18121;daily;30
+Mercredi 11-05-2022;ODCNG-18122;non working day;1h
+Mercredi 11-05-2022;ODCNG-18159;automatisation indicators;6h 30
+Jeudi 12-05-2022;ODCNG-18121;daily + TO BE DEFINE;1h30
+Jeudi 12-05-2022;ODCNG-18122;non working day;1h
+Jeudi 12-05-2022;ODCNG-18159;automatisation indicators;4h 30
+Jeudi 12-05-2022;ODECSCNGACCEPTANCE-15782;non working day;1h
+Vendredi 13-05-2022;ODCNG-18121;daily;30
+Vendredi 13-05-2022;ODCNG-18122;non working day;1h
+Vendredi 13-05-2022;ODCNG-18159;automatisation indicators;3h30
+Vendredi 13-05-2022;ODECSCNGACCEPTANCE-15782;resetAllPassword;3h
+Lundi 16-05-2022;ODCNG-17229;Environment;1h 30
+Lundi 16-05-2022;ODCNG-18121;daily;30
+Lundi 16-05-2022;ODCNG-18122;non working day;1h
+Lundi 16-05-2022;ODCNG-18159;automatisation indicators;3h
+Lundi 16-05-2022;ODECSCNGACCEPTANCE-15782;resetAllPassword;2h
+Mardi 17-05-2022;ODCNG-17229;Environment;3h
+Mardi 17-05-2022;ODCNG-18121;daily + macro-analyse;1h 30
+Mardi 17-05-2022;ODCNG-18122;non working day;1h
+Mardi 17-05-2022;ODECSCNGACCEPTANCE-15782;resetAllPassword;2h 30
+Mercredi 18-05-2022;ODCNG-17229;Environment;1h 30
+Mercredi 18-05-2022;ODCNG-18121;daily;30
+Mercredi 18-05-2022;ODCNG-18122;non working day;5h
+Mercredi 18-05-2022;ODECSCNGACCEPTANCE-15645;Ergonomy issues;1h
+Jeudi 19-05-2022;ODCNG-18122;congés;1d
+Vendredi 20-05-2022;ODCNG-18122;congés;1d
+Lundi 23-05-2022;ODCNG-17229;Environment;6h30
+Lundi 23-05-2022;ODCNG-18121;daily;30
+Lundi 23-05-2022;ODCNG-18122;non working day;1h
+Mardi 24-05-2022;ODCNG-17229;Environment;2h
+Mardi 24-05-2022;ODCNG-18121;daily;30
+Mardi 24-05-2022;ODCNG-18122;non working day;1h
+Mardi 24-05-2022;ODECSCNGACCEPTANCE-15782;resetAllPassword;4h30
+Mercredi 25-05-2022;ODCNG-17229;Environment;2h
+Mercredi 25-05-2022;ODCNG-18121;daily;30
+Mercredi 25-05-2022;ODCNG-18122;non working day;1h
+Mercredi 25-05-2022;ODECSCNGACCEPTANCE-15645;Ergonomy issues;3h
+Mercredi 25-05-2022;ODECSCNGACCEPTANCE-15782;resetAllPassword : MR to report;1h30
+Jeudi 26-05-2022;ODCNG-18122;jour férié;1d
+Vendredi 27-05-2022;ODCNG-17229;Environment;5h30
+Vendredi 27-05-2022;ODCNG-18121;daily;30
+Vendredi 27-05-2022;ODCNG-18122;non working day;1h
+Vendredi 27-05-2022;ODECSCNGACCEPTANCE-15645;Ergonomy issues;1h
+Lundi 30-05-2022;ODCNG-17229;Environment;5h
+Lundi 30-05-2022;ODCNG-18121;daily + sprint planning;1h 30
+Lundi 30-05-2022;ODCNG-18122;non working day;1h 30
+Mardi 31-05-2022;ODCNG-17229;Environment;2h
+Mardi 31-05-2022;ODCNG-18121;daily + macro-analyse + ou-en-sommes-nous;2h
+Mardi 31-05-2022;ODCNG-18122;non working day;1h
+Mardi 31-05-2022;ODECSCNGACCEPTANCE-15645;Ergonomy issues;3h
+Mercredi 01-06-2022;ODCNG-18121;daily;1h
+Mercredi 01-06-2022;ODCNG-18122;non working day;1h
+Mercredi 01-06-2022;ODECSCNGACCEPTANCE-15645;Ergonomy issues;4h
+Mercredi 01-06-2022;ODECSCNGACCEPTANCE-15813;Ergonomy issue [CHAT];2h
+Jeudi 02-06-2022;ODCNG-18121;daily;1h
+Jeudi 02-06-2022;ODCNG-18122;non working day;1h
+Jeudi 02-06-2022;ODECSCNGACCEPTANCE-15645;Ergonomy issues;1h
+Jeudi 02-06-2022;ODECSCNGACCEPTANCE-15813;Ergonomy issue [CHAT];3h
+Jeudi 02-06-2022;ODECSCNGACCEPTANCE-16096;SonarQube Correction globale;2h
+Vendredi 03-06-2022;ODCNG-17229;Environment;1h 30
+Vendredi 03-06-2022;ODCNG-18121;daily + presentation bench + cotrecs;2h 30
+Vendredi 03-06-2022;ODCNG-18122;non working day;1h
+Vendredi 03-06-2022;ODECSCNGACCEPTANCE-15813;Ergonomy issue [CHAT];3h
+Mardi 07-06-2022;ODCNG-18121;daily;30
+Mardi 07-06-2022;ODCNG-18122;non working day;5h
+Mardi 07-06-2022;ODECSCNGACCEPTANCE-15813;Ergonomy issue [CHAT];1h 30
+Mardi 07-06-2022;ODECSCNGACCEPTANCE-16565;[SUPERVISION] The global view of contacts does not exist;1h
+Mercredi 08-06-2022;ODCNG-17229;Environment;2h
+Mercredi 08-06-2022;ODCNG-18121;daily;3h30
+Mercredi 08-06-2022;ODCNG-18122;non working day;1h
+Mercredi 08-06-2022;ODECSCNGACCEPTANCE-16565;[SUPERVISION] The global view of contacts does not exist;1h30
+Jeudi 09-06-2022;ODCNG-18121;daily + empowerment week + to be define show;3h
+Jeudi 09-06-2022;ODCNG-18122;non working day;1h
+Jeudi 09-06-2022;ODECSCNGACCEPTANCE-15782;resetAllPassword : Valid test with Testers;1h30
+Jeudi 09-06-2022;ODECSCNGACCEPTANCE-16565;[SUPERVISION] The global view of contacts does not exist : REJECTED;1h30
+Jeudi 09-06-2022;ODECSCNGACCEPTANCE-14757;[Campaign] Label in english;1h
+Vendredi 10-06-2022;ODCNG-18121;daily;30
+Vendredi 10-06-2022;ODECSCNGACCEPTANCE-14757;[Campaign] Label in english : Rejection;5h
+Vendredi 10-06-2022;ODCNG-18122;non working day + pétanque;1h30
+Vendredi 10-06-2022;ODECSCNGACCEPTANCE-16772;Erreur label recherche ASU - EN;1h
+Lundi 13-06-2022;ODCNG-18121;daily;30
+Lundi 13-06-2022;ODECSCNGACCEPTANCE-16772;Erreur label recherche ASU - EN;3h
+Lundi 13-06-2022;ODCNG-17229;Environment;3h30
+Lundi 13-06-2022;ODCNG-18122;non working day;1h

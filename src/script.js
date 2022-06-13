@@ -4,12 +4,11 @@ var actif = 1;
 var isActive = false;
 
 function applyKey(event) {
-    let evt = event || window.event;
     if (isActive) {
-        if (evt.keyCode == '37') {
+        if (event.keyCode == '37') {
             previousMonth();
         }
-        if (evt.keyCode == '39')
+        if (event.keyCode == '39')
             nextMonth();
     }
 }
