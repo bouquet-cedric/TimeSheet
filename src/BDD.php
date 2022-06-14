@@ -1,6 +1,11 @@
 <?php
 
 define("DEFAULT_TITLE","Click me");
+define("BISSEXTILE_EXCEPT","This type is not usable with the bissextile function");
+define("EXPECT_NUMBER_STRING","The expected parameter must to be a numerical string");
+define('DLY',"daily");
+define('NWD',"non-working-day");
+define('ENV',"environnement");
 
 function addLink($page,$icon,$name,$title=DEFAULT_TITLE){
     echo "
@@ -29,6 +34,8 @@ function addButtonLink($page,$icon,$name,$title=DEFAULT_TITLE){
 
 class Utility {
     public static function in ($chaine,$elt){
+        $chaine=utf8_decode($chaine);
+        $elt=utf8_decode($elt);
         $len=strlen($chaine);
         for ($i=0;$i<$len;$i++){
             if ($chaine[$i]==$elt){
@@ -65,31 +72,36 @@ class Utility {
     }
 
     public static function getRealNumber($champDate){
+        if (gettype($champDate) !== "string" || ! is_numeric($champDate)){
+            throw new Exceptor(EXPECT_NUMBER_STRING);
+        }
         $isMenorTen=($champDate[0]=='0'?$champDate:'0'.$champDate);
         return $champDate>9?$champDate:$isMenorTen;
     }
 
     public static function moment($val){
         $classSup="";
-        define('NWD',"non-working-day");
-        define('ENV',"environnement");
         switch ($val) {
-            case stripos($val,"daily") !== false:
-                $classSup=$classSup." ".$val;
+            case stripos($val,DLY) !== false:
+                $classSup=$classSup.DLY." ";
                 break;
             case stripos($val,ENV) !== false:
-                $classSup=$classSup." ".ENV;
+                $classSup=$classSup.ENV." ";
                 break;
             case stripos($val,"non working day") !== false:
-                $classSup=$classSup." ".NWD;
+                $classSup=$classSup.NWD." ";
+                break;
+            case stripos($val,NWD) !== false:
+                $classSup=$classSup.NWD." ";
                 break;
             case stripos($val,"congés") !== false:
-                $classSup=$classSup." ".NWD;
+                $classSup=$classSup.NWD." ";
                 break;
             case stripos($val,"férié") !== false:
-                $classSup=$classSup." ".NWD;
+                $classSup=$classSup.NWD." ";
                 break;
             default:
+                $classSup.=" ";
                 break;
         }
         return $classSup;
@@ -137,6 +149,12 @@ class Utility {
         return $res;
     }
 }
+
+class Exceptor extends Exception {
+    public function __construct($msg,$code=0, Throwable $previous = null){
+        parent::__construct($msg,$code,$previous);
+    }
+}
 class Times {
     public static $months=array("Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre");
     public static $days=array(
@@ -148,6 +166,7 @@ class Times {
         "Saturday"=>"Samedi",
         "Sunday"=>"Dimanche"
     );
+
     public static function addTimes($time1,$time2){
         $sp1=Times::splitTime($time1);
         $sp2=Times::splitTime($time2);
@@ -161,6 +180,9 @@ class Times {
     }
 
     public static function bissextile($annee) {
+        if (gettype($annee) !== "integer") {
+            throw new Exceptor(BISSEXTILE_EXCEPT);
+        }
         return (is_int($annee/4) && !is_int($annee/100)) || is_int($annee/400);
     }
 
@@ -209,15 +231,15 @@ class Times {
         $globalMinutes=$total_time;
         $formatTime="";
         if ($globalDays>0){
-            $formatTime="$globalDays ".($globalDays>1?"jours":"jour");
+            $formatTime="$globalDays ".($globalDays>1?"jours":"jour")." ";
         }
         if ($globalHours>0){
-            $formatTime=$formatTime." $globalHours ".($globalHours>1?"heures":"heure");
+            $formatTime=$formatTime."$globalHours ".($globalHours>1?"heures":"heure")." ";
         }
         if ($globalMinutes>0){
-            $formatTime=$formatTime." $globalMinutes ".($globalMinutes>1?"minutes":"minute");
+            $formatTime=$formatTime."$globalMinutes ".($globalMinutes>1?"minutes":"minute");
         }
-        return $formatTime;
+        return trim($formatTime);
     }
 
     public static function getDate($date,$format=null){
@@ -250,8 +272,8 @@ class Times {
         return Times::getDate($d)[0];
     }
 
-    public static function getFullDateFR($key){
-        $date = Times::getDay(Utility::getRealNumber($key['day'])."/".Utility::getRealNumber($key['month'])."/".Utility::getRealNumber($key['year']));
+    public static function getFullDateFR($day,$month,$year){
+        $date = Times::getDay(Utility::getRealNumber($day)."/".Utility::getRealNumber($month)."/".Utility::getRealNumber($year));
         $day = explode(" ",$date)[0];
         $jour = Times::$days[$day];
         return str_replace($day,$jour,$date);
@@ -262,11 +284,7 @@ class Times {
         $day=explode('-',$date)[0];
         $month=explode('-',$date)[1];
         $year=explode('-',$date)[2];
-        $key=[];
-        $key["day"] = $day;
-        $key["month"] = $month;
-        $key["year"] = $year;
-        return Times::getFullDateFR($key);
+        return Times::getFullDateFR($day,$month,$year);
     }
 }
 
@@ -348,7 +366,7 @@ class Save {
         try {
             file_put_contents($filetasks,"Date;Jira;Commentaire;Temps\n", FILE_USE_INCLUDE_PATH);
             foreach ($result as $key){
-                file_put_contents($filetasks,Times::getFullDateFR($key).";".$key['jira'].";".$key['comment'].";".$key['time']."\n",FILE_APPEND);
+                file_put_contents($filetasks,Times::getFullDateFR($key['day'],$key['month'],$key['year']).";".$key['jira'].";".$key['comment'].";".$key['time']."\n",FILE_APPEND);
             }
         }
         catch(Exception $e){
@@ -364,7 +382,7 @@ class Save {
         try {
             file_put_contents($fileworkhouse,"Date;Matin;Après-midi\n", FILE_USE_INCLUDE_PATH);
             foreach ($result as $key){
-                file_put_contents($fileworkhouse,Times::getFullDateFR($key).";".Utility::getPlaceFromTtValue($key['AM']).";".Utility::getPlaceFromTtValue($key['PM'])."\n",FILE_APPEND);
+                file_put_contents($fileworkhouse,Times::getFullDateFR($key['day'],$key['month'],$key['year']).";".Utility::getPlaceFromTtValue($key['AM']).";".Utility::getPlaceFromTtValue($key['PM'])."\n",FILE_APPEND);
             }
         }
         catch(Exception $e){
@@ -660,7 +678,7 @@ class BDD {
                     </td>";
                 }
                 else if ($key=='date' || $key == 'date_t'){
-                    $realDate=Times::getFullDateFrFromRealDate($val);
+                    $realDate=Times::getFormat($val);
                     echo "<td class='$cls $key'>$realDate</td>";
                 }
                 else {

@@ -23,7 +23,6 @@
         $db->getTasks(100);
         echo "</div>";
     }
-    
 ?>
 
 </body>
