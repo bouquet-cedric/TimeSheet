@@ -72,8 +72,11 @@ class Utility {
     }
 
     public static function getRealNumber($champDate){
-        if (gettype($champDate) !== "string" || ! is_numeric($champDate)){
+        if ( ! is_numeric($champDate)){
             throw new Exceptor(EXPECT_NUMBER_STRING);
+        }
+        else if (gettype($champDate) !== "string") {
+            return Utility::getRealNumber("".$champDate);
         }
         $isMenorTen=($champDate[0]=='0'?$champDate:'0'.$champDate);
         return $champDate>9?$champDate:$isMenorTen;

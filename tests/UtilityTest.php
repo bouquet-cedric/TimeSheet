@@ -35,7 +35,7 @@
                 $this->assert($expect[$i],Utility::getRealNumber($data[$i]));
                 $this->not_assert($errors[$i],Utility::getRealNumber($data[$i]));
             }
-            $erratum=["a",3,"A","Hello"];
+            $erratum=["a","A","Hello"];
             $cpt_check=0;
             for ($i=0;$i<count($erratum);$i++){
                 try {
