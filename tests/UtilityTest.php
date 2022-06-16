@@ -2,7 +2,7 @@
 
     require_once(__DIR__."/template.php");
 
-    class UtilityTest extends TestClass{
+    class UtilityTest extends ClassTest{
         
         /**
          * @test
@@ -28,12 +28,12 @@
         }
 
         public function testRealNumber(){
-            $data=["9","10","11","5"];
-            $expect=["09","10","11","05"];
-            $errors=["9","010","011","5"];
+            $data=["9","10","11","5","0",3,3];
+            $expect=["09","10","11","05","00","03","03"];
+            $errors=["9","010","011","5","0",3,"3"];
             for ($i=0;$i<count($data);$i++){
-                $this->assert($expect[$i],Utility::getRealNumber($data[$i]));
-                $this->not_assert($errors[$i],Utility::getRealNumber($data[$i]));
+                $this->assert_true(Utility::getRealNumber($data[$i])===$expect[$i]);
+                $this->assert_false(Utility::getRealNumber($data[$i]) === $errors[$i]);
             }
             $erratum=["a","A","Hello"];
             $cpt_check=0;
@@ -49,17 +49,11 @@
             $this->assert(count($erratum),$cpt_check);
         }
 
-        public function simpletest($data,$exp,$func){
-            for ($i=0; $i<count($data); $i++){
-                $this->assert($exp[$i]." ",$func($data[$i]));
-            }
-        }
-
         public function testMoment(){
             $datas=["Pb environnement","congés",NWD,"non working day","jour férié","daily + making of",DLY,"OTHER"];
             $expect=[ENV,NWD,NWD,NWD,NWD,DLY,DLY,""];
             for ($i=0; $i<count($datas); $i++){
-                $this->assert($expect[$i]." ",Utility::moment($datas[$i]));
+                $this->assert(trim($expect[$i]),trim(Utility::moment($datas[$i])));
             }
         }
         
@@ -76,6 +70,18 @@
             $expect=['Télétravail','','','Bureau','Absent','',''];
             for ($i=0; $i<count($datas); $i++){
                 $this->assert($expect[$i],Utility::getPlaceFromTtValue($datas[$i]));
+            }
+        }
+
+        public function testLogger(){
+            $datas=[3>2,"ok",4];
+            $res=[1,"ok",4];
+            for ($i=0; $i<count($datas); $i++){
+                ob_clean();
+                $test=Utility::logger($datas[$i]);
+                $this->assert_not_null($test);
+                $this->assert_true($test == $res[$i]);
+                $this->echotest('<script>console.log("'.$res[$i].'");</script>');
             }
         }
     }

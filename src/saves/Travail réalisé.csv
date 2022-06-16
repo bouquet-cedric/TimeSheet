@@ -5,7 +5,7 @@ Mercredi 11-05-2022;ODCNG-18159;automatisation indicators;6h 30
 Jeudi 12-05-2022;ODCNG-18121;daily + TO BE DEFINE;1h30
 Jeudi 12-05-2022;ODCNG-18122;non working day;1h
 Jeudi 12-05-2022;ODCNG-18159;automatisation indicators;4h 30
-Jeudi 12-05-2022;ODECSCNGACCEPTANCE-15782;non working day;1h
+Jeudi 12-05-2022;ODECSCNGACCEPTANCE-15782;resetAllPassword;1h
 Vendredi 13-05-2022;ODCNG-18121;daily;30
 Vendredi 13-05-2022;ODCNG-18122;non working day;1h
 Vendredi 13-05-2022;ODCNG-18159;automatisation indicators;3h30
@@ -62,6 +62,7 @@ Vendredi 03-06-2022;ODCNG-17229;Environment;1h 30
 Vendredi 03-06-2022;ODCNG-18121;daily + presentation bench + cotrecs;2h 30
 Vendredi 03-06-2022;ODCNG-18122;non working day;1h
 Vendredi 03-06-2022;ODECSCNGACCEPTANCE-15813;Ergonomy issue [CHAT];3h
+Lundi 06-06-2022;ODCNG-18122;jour férié;8h
 Mardi 07-06-2022;ODCNG-18121;daily;30
 Mardi 07-06-2022;ODCNG-18122;non working day;5h
 Mardi 07-06-2022;ODECSCNGACCEPTANCE-15813;Ergonomy issue [CHAT];1h 30
@@ -72,15 +73,28 @@ Mercredi 08-06-2022;ODCNG-18122;non working day;1h
 Mercredi 08-06-2022;ODECSCNGACCEPTANCE-16565;[SUPERVISION] The global view of contacts does not exist;1h30
 Jeudi 09-06-2022;ODCNG-18121;daily + empowerment week + to be define show;3h
 Jeudi 09-06-2022;ODCNG-18122;non working day;1h
+Jeudi 09-06-2022;ODECSCNGACCEPTANCE-14757;[Campaign] Label in english;1h
 Jeudi 09-06-2022;ODECSCNGACCEPTANCE-15782;resetAllPassword : Valid test with Testers;1h30
 Jeudi 09-06-2022;ODECSCNGACCEPTANCE-16565;[SUPERVISION] The global view of contacts does not exist : REJECTED;1h30
-Jeudi 09-06-2022;ODECSCNGACCEPTANCE-14757;[Campaign] Label in english;1h
 Vendredi 10-06-2022;ODCNG-18121;daily;30
-Vendredi 10-06-2022;ODECSCNGACCEPTANCE-14757;[Campaign] Label in english : Rejection;5h
 Vendredi 10-06-2022;ODCNG-18122;non working day + pétanque;1h30
+Vendredi 10-06-2022;ODECSCNGACCEPTANCE-14757;[Campaign] Label in english : Rejection;5h
 Vendredi 10-06-2022;ODECSCNGACCEPTANCE-16772;Erreur label recherche ASU - EN;1h
-Lundi 13-06-2022;ODCNG-18121;daily;30
-Lundi 13-06-2022;ODECSCNGACCEPTANCE-16772;Erreur label recherche ASU - EN;3h
 Lundi 13-06-2022;ODCNG-17229;Environment;3h30
+Lundi 13-06-2022;ODCNG-18121;daily;30
 Lundi 13-06-2022;ODCNG-18122;non working day;1h
+Lundi 13-06-2022;ODECSCNGACCEPTANCE-16772;Erreur label recherche ASU - EN;3h
 Mardi 14-06-2022;ODCNG-18121;daily;30
+Mardi 14-06-2022;ODCNG-18122;non working day;1h
+Mardi 14-06-2022;ODECSCNGACCEPTANCE-16772;Erreur label recherche ASU - EN : Fix with other linked jiras;2h 30
+Mardi 14-06-2022;ODCNG-18159;automatisation indicators;1h 30
+Mardi 14-06-2022;ODECSCNGACCEPTANCE-16554;[LBP] Bouton reconduire le post traitement inactif;2h 30
+Mercredi 15-06-2022;ODCNG-18121;daily + presentation P4S;1h
+Mercredi 15-06-2022;ODECSCNGACCEPTANCE-16554;[LBP] Bouton reconduire le post traitement inactif;2h
+Mercredi 15-06-2022;ODCNG-17229;Environment;4h
+Mercredi 15-06-2022;ODCNG-18122;non working day;1h
+Jeudi 16-06-2022;ODCNG-18121;daily + support avec Thomas + affinage;2h 30
+Jeudi 16-06-2022;ODCNG-18122;non working day;1h
+Jeudi 16-06-2022;ODCNG-17229;Environment;3h
+Jeudi 16-06-2022;ODECSCNGACCEPTANCE-16554;[LBP] Bouton reconduire le post traitement inactif;1h 30
+// Mis à jour le Jeudi 16-06-2022

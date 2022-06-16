@@ -78,33 +78,35 @@ class Utility {
         else if (gettype($champDate) !== "string") {
             return Utility::getRealNumber("".$champDate);
         }
-        $isMenorTen=($champDate[0]=='0'?$champDate:'0'.$champDate);
-        return $champDate>9?$champDate:$isMenorTen;
+        if ($champDate < 10){
+            return "0".(int)$champDate;
+        }
+        return $champDate;
     }
 
     public static function moment($val){
         $classSup="";
         switch ($val) {
             case stripos($val,DLY) !== false:
-                $classSup=$classSup.DLY." ";
+                $classSup=$classSup." ".DLY;
                 break;
             case stripos($val,ENV) !== false:
-                $classSup=$classSup.ENV." ";
+                $classSup=$classSup." ".ENV;
                 break;
             case stripos($val,"non working day") !== false:
-                $classSup=$classSup.NWD." ";
+                $classSup=$classSup." ".NWD;
                 break;
             case stripos($val,NWD) !== false:
-                $classSup=$classSup.NWD." ";
+                $classSup=$classSup." ".NWD;
                 break;
             case stripos($val,"congés") !== false:
-                $classSup=$classSup.NWD." ";
+                $classSup=$classSup." ".NWD;
                 break;
             case stripos($val,"férié") !== false:
-                $classSup=$classSup.NWD." ";
+                $classSup=$classSup." ".NWD;
                 break;
             default:
-                $classSup.=" ";
+                $classSup=$classSup." ";
                 break;
         }
         return $classSup;
@@ -112,6 +114,7 @@ class Utility {
 
     public static function logger($res){
         echo "<script>console.log(\"".$res."\");</script>";
+        return $res;
     }
 
     public static function getValueTT($momentDay){
@@ -174,12 +177,13 @@ class Times {
         $sp1=Times::splitTime($time1);
         $sp2=Times::splitTime($time2);
         $globalTime=$sp1+$sp2;
-        $globalHours=floor($globalTime/60);
-        $globalMinutes=$globalTime - $globalHours * 60;
+        $result=Times::real_time($globalTime);
+        $result=preg_replace("/ jour(s{0,1})/","d",$result);
+        $result=preg_replace("/ heure(s{0,1})/","h",$result);
+        $result=preg_replace("/ minute(s{0,1})/","",$result);
 
-        $timhours=($globalHours>0?$globalHours."h":"");
-        $timinutes=($globalMinutes>0?$globalMinutes:"");
-        return $timhours.$timinutes;
+        return $result;
+        return "";
     }
 
     public static function bissextile($annee) {
@@ -191,26 +195,21 @@ class Times {
 
     public static function splitTime($time){
         $time=str_replace(' ','',$time);
-        $len=strlen($time);
         $days=0;
         $hours=0;
         $minutes=0;
         $reste=$time;
-        for ($i=0;$i<$len;$i++){
-            if ($time[$i]=='d'){
-                $days=explode('d',$time)[0]-'0';
-                $reste=explode('d',$time)[1];
-            }
-            if ($time[$i]=='h'){
-                $hours=explode('h',$reste)[0]-'0';
-                if ($i<$len-1){
-                    $minutes=explode('h',$reste)[1]-'0';
-                }
-            }
+
+        if (Utility::in($time,'d')){
+            $days=explode('d',$time)[0]-'0';
+            $reste=explode('d',$time)[1];
         }
-        if ( ! Utility::in($time,'d') && ! Utility::in($time,'h')) {
-            return $time;
+        if (Utility::in($reste,'h')){
+            $hours=explode('h',$reste)[0]-'0';
+            $reste=explode('h',$reste)[1];
         }
+        $minutes=(int)$reste;
+
         return $days*8*60+$hours*60+$minutes;
     }
 
@@ -357,20 +356,22 @@ class Save {
     }
 
     static function makeCsv(){
-        $basename = getcwd()."/"."saves"."/".Times::getFullDateFrFromRealDate(Times::getToday()[0]);
+        $updateDay="// Mis à jour le ".Times::getFullDateFrFromRealDate(Times::getToday()[0]);
+        $basename = getcwd()."/"."saves"."/";
 
         $db=new BDD();
         $stmt = $db->getDB()->prepare("select * from tasks;");
         $stmt->execute();
         $result = $stmt->fetchAll();
 
-        $filetasks = $basename." - travail réalisé.csv";
+        $filetasks = $basename."Travail réalisé.csv";
         
         try {
             file_put_contents($filetasks,"Date;Jira;Commentaire;Temps\n", FILE_USE_INCLUDE_PATH);
             foreach ($result as $key){
                 file_put_contents($filetasks,Times::getFullDateFR($key['day'],$key['month'],$key['year']).";".$key['jira'].";".$key['comment'].";".$key['time']."\n",FILE_APPEND);
             }
+            file_put_contents($filetasks,$updateDay,FILE_APPEND);
         }
         catch(Exception $e){
             Utility::logger($e->getMessage());
@@ -380,13 +381,14 @@ class Save {
         $stmt->execute();
         $result = $stmt->fetchAll();
         
-        $fileworkhouse = $basename." - télétravail.csv";
+        $fileworkhouse = $basename."Télétravail.csv";
 
         try {
             file_put_contents($fileworkhouse,"Date;Matin;Après-midi\n", FILE_USE_INCLUDE_PATH);
             foreach ($result as $key){
                 file_put_contents($fileworkhouse,Times::getFullDateFR($key['day'],$key['month'],$key['year']).";".Utility::getPlaceFromTtValue($key['AM']).";".Utility::getPlaceFromTtValue($key['PM'])."\n",FILE_APPEND);
             }
+            file_put_contents($fileworkhouse,$updateDay,FILE_APPEND);
         }
         catch(Exception $e){
             Utility::logger($e->getMessage());
@@ -572,20 +574,19 @@ class BDD {
                     $com[$cptCom] = $v;
                     $cptCom++;
                 }
-                else if ($k == "date"){                    
+                else if ($k == "date"){
                     $days[$cptDays]=Times::getFormat($v);
                     $cptDays++;
                 }
             }
         }
-        echo "<h3>$task</h3>
+        echo "<h3><a href='https://jira.worldline.com/browse/$task' target='_blank'>$task</a></h3>
             <nav class='detailTask'>
-                <h4>Jours : </h4>
             <ul>";
         for ($i=0;$i<count($times);$i++){
-            echo "<li class='timeday'>$days[$i] - $com[$i] : $times[$i] minutes</li>";
+            echo "<li class='timeday'>$days[$i]<ol>$com[$i]</ol><ol>$times[$i] minutes</ol></li>";
         }
-        echo "</ul><br><span class='taskTime'><u>Temps total :</u> $Totaltime minutes, soit ".Times::real_time($Totaltime)."</span></nav>";
+        echo "</ul></nav><span class='taskTime'><u>Temps total :</u> $Totaltime minutes, soit ".Times::real_time($Totaltime)."</span>";
     }
 
     function updateTimeAndComment($day,$month,$year,$jira,$time,$comment){
@@ -711,7 +712,7 @@ class BDD {
         $stmt->execute();
         $result = $stmt->fetchAll();
         echo "<table><tr>";
-        $columns=explode(',',"jira,commentaires,time,update-date,update-time,action");
+        $columns=explode(',',"jira,commentaires,time,Mise à jour,Heure,action");
         $globalTime=0;
         for ($i=0;$i<count($columns);$i++){
             echo "<th>$columns[$i]</th>";
@@ -738,6 +739,10 @@ class BDD {
                             <input type='submit' value='X' name='deleteTask'/>
                         </form>
                     </td>";
+                }
+                else if ($key=='date' || $key == 'date_t'){
+                    $realDate=Times::getFormat($val);
+                    echo "<td class='$cls $key'>$realDate</td>";
                 }
                 else {
                     echo "<td class='$cls'>$val</td>";

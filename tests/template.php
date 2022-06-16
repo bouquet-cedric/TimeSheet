@@ -5,7 +5,7 @@
     /**
      * ClassTest
      */
-    class TestClass extends TestCase {
+    class ClassTest extends TestCase {
 
         /**
          * Undocumented function
@@ -49,6 +49,18 @@
          */
         public function assert_false($actual){
             $this->assertEquals(false,$actual);
+        }
+
+        public function assert_null($actual){
+            $this->assertNull($actual);
+        }   
+
+        public function assert_not_null($actual){
+            $this->assertNotNull($actual);
+        }
+
+        public function echotest($actual){
+            $this->expectOutputString($actual);
         }
     }
 

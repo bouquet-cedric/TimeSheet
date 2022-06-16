@@ -300,10 +300,35 @@ button[name=makeCsv] i {
 
 .detailTask {
     background-color: lightgray;
-    width: 40%;
+    width: 50%;
     animation: 0.5s spoufLeft 0s linear 1;
     z-index: -50;
-    border-radius: 0 30% 30% 0;
+    min-height: 60vmin;
+    height: 60vmin;
+    max-height: 60vmin;
+    overflow-y: auto;
+    border-radius: 0 15px 15px 0;
+}
+
+.detailTask li {
+    list-style: none;
+    color: red;
+    text-shadow: blueviolet 1px 1px, blueviolet -1px -1px, blueviolet 1px -1px, blueviolet -1px 1px;
+}
+
+.detailTask ol {
+    text-shadow: black 1px 1px, black -1px -1px, black 1px -1px, black -1px 1px;
+    color: white;
+}
+
+.detailTask ol::before {
+    content: '>\0A';
+}
+
+.detailTask li::before {
+    content: '-\0A';
+    color: red;
+    font-weight: bold;
 }
 
 @keyframes spoufLeft {
@@ -545,8 +570,14 @@ td.id {
 }
 
 .taskTime {
-    text-indent: 2em;
+    /* text-indent: 2em; */
     display: inline-block;
+    padding: 0.5em 2em;
+    position: absolute;
+    border-radius: 25em 0 0 0;
+    bottom: 0;
+    right: 0;
+    background-color: lightgray;
 }
 
 tr.teleDay td {
